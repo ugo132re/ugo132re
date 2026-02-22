@@ -1,0 +1,163 @@
+-- [[ ENCRYPTED BY REMOTE HUB SECURITY v2.1 ]] --
+-- [[ AUTHORIZED ACCESS ONLY ]] --
+
+local _0x726D68 = function(a) local b = "" for i=1,#a do b = b .. string.char(a[i]) end return b end
+local _0x4C6F6164 = loadstring(game:HttpGet(_0x726D68({104,116,116,112,115,58,47,47,103,105,116,104,117,98,46,99,111,109,47,100,97,119,105,100,45,115,99,114,105,112,116,115,47,70,108,117,101,110,116,47,114,101,108,101,97,115,101,115,47,108,97,116,101,115,116,47,100,111,119,110,108\
+,111,97,100,47,109,97,105,110,46,108,117,97})))()
+
+local _0x57696E = _0x4C6F6164:CreateWindow({
+    Title = "REMOTE HUB | Professional",
+    SubTitle = "by UGO132RE",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = false,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local _0x54616273 = { _0x1 = _0x57696E:AddTab({ Title = "Home", Icon = "home" }) }
+local _0x436667 = { _0xA = { E = false, F = 150, S = 0.5 }, _0xV = { C = false, S = false } }
+
+local _0x464F56 = Drawing.new("Circle")
+_0x464F56.Visible = false
+_0x464F56.Thickness = 1
+_0x464F56.Radius = _0x436667._0xA.F
+_0x464F56.Filled = false
+_0x464F56.Color = Color3.fromRGB(255, 255, 255)
+
+local _0x4D = _0x54616273._0x1
+_0x4D:AddSection("Stealth Aimbot")
+
+_0x4D:AddToggle("AimToggle", { Title = "Enable Aimbot", Default = false, Callback = function(v) _0x436667._0xA.E = v _0x464F56.Visible = v end })
+_0x4D:AddInput("FovInput", { Title = "FOV Size", Default = "150", Numeric = true, Finished = true, Callback = function(v) local n = tonumber(v) if n then _0x436667._0xA.F = n _0x464F56.Radius = n end end })
+
+_0x4D:AddSection("Visuals (ESP)")
+_0x4D:AddToggle("ChamsToggle", { Title = "Enable Chams (\234\183\173\234\184\173\233\183\171\233\185\130\230\184\170)", Default = false, Callback = function(v) _0x436667._0xV.C = v end })
+_0x4D:AddToggle("SkeletonToggle", { Title = "Enable Skeleton (\233\130\133\232\173\131\230\184\170\232\173\141\232\173\131\230\184\133)", Default = false, Callback = function(v) _0x436667._0xV.S = v end })
+
+_0x4D:AddSection("Character & Tools")
+_0x4D:AddInput("SpeedInput", { Title = "WalkSpeed", Default = "16", Numeric = true, Finished = true, Callback = function(v) local n = tonumber(v) if n and game.Players.LocalPlayer.Character then game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = n end end })
+
+_0x4D:AddButton({ Title = "Infinite Yield", Callback = function() loadstring(game:HttpGet(_0x726D68({104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115\
+,101,114\
+,99,111,110,116,101\
+,110\
+,116,46,99\
+,111\
+,109,47,69\
+,100\
+,103\
+,101\
+,105\
+,121\
+,47,105,110,102\
+,105\
+,110,105\
+,116,101\
+,121\
+,105\
+,101\
+,108\
+,100\
+,47,109,97,115,116\
+,101\
+,114\
+,47,115,111,117\
+,114,99,101})))() end })
+
+_0x4D:AddButton({ Title = "Dark Dex V3", Callback = function() loadstring(game:HttpGet(_0x726D68({104,116,116,112,115,58,47\
+,47\
+,114,97,119\
+,46,103,105,116,104\
+,117,98\
+,117,115,101\
+,114\
+,99,111\
+,110\
+,116\
+,101\
+,110\
+,116,46,99,111,109,47\
+,66,97\
+,98,121\
+,104,97\
+,109,115\
+,116,97,47,82,66\
+,76\
+,88,95\
+,83,99\
+,114,105\
+,112\
+,116\
+,115,47,109\
+,97\
+,105,110,47\
+,85\
+,110,105\
+,118\
+,101\
+,114\
+,115\
+,97\
+,108,47\
+,66\
+,121\
+,112\
+,97\
+,115\
+,115\
+,101\
+,100\
+,68,97\
+,114,107\
+,68\
+,101,120\
+,86\
+,51\
+,46,108\
+,117,97})))() end })
+
+local function _0x455350(p)
+    local h = Instance.new("Highlight") h.Name = "RH_HL" h.FillColor = Color3.fromRGB(255, 0, 0) h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    local l = Drawing.new("Line") l.Visible = false l.Color = Color3.fromRGB(255, 255, 255) l.Thickness = 1
+    game:GetService("RunService").RenderStepped:Connect(function()
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            h.Parent = p.Character h.Enabled = _0x436667._0xV.C
+            if _0x436667._0xV.S then
+                local hP = p.Character:FindFirstChild("Head") local tP = p.Character:FindFirstChild("HumanoidRootPart")
+                if hP and tP then
+                    local p1, o1 = workspace.CurrentCamera:WorldToViewportPoint(hP.Position)
+                    local p2, o2 = workspace.CurrentCamera:WorldToViewportPoint(tP.Position)
+                    if o1 and o2 then
+                        l.From = Vector2.new(p1.X, p1.Y) l.To = Vector2.new(p2.X, p2.Y) l.Visible = true
+                    else l.Visible = false end
+                else l.Visible = false end
+            else l.Visible = false end
+        else h.Enabled = false l.Visible = false end
+    end)
+end
+
+for _, v in pairs(game.Players:GetPlayers()) do if v ~= game.Players.LocalPlayer then _0x455350(v) end end
+game.Players.PlayerAdded:Connect(_0x455350)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if _0x436667._0xA.E then
+        local c = workspace.CurrentCamera
+        _0x464F56.Position = Vector2.new(c.ViewportSize.X / 2, c.ViewportSize.Y / 2)
+        local t = nil local d = _0x436667._0xA.F
+        for _, v in pairs(game:GetService("Players"):GetPlayers()) do
+            if v ~= game:GetService("Players").LocalPlayer and v.Character and v.Character:FindFirstChild("Head") then
+                local p, o = c:WorldToViewportPoint(v.Character.Head.Position)
+                if o then
+                    local m = (Vector2.new(p.X, p.Y) - _0x464F56.Position).Magnitude
+                    if m < d then d = m t = v end
+                end
+            end
+        end
+        if t then
+            c.CFrame = c.CFrame:Lerp(CFrame.new(c.CFrame.Position, t.Character.Head.Position), _0x436667._0xA.S)
+        end
+    end
+end)
+
+_0x54616273._0x1:Select()
