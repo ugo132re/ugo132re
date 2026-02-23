@@ -1,41 +1,57 @@
--- [[ WARNING: PRIVATE SECURITY ENCRYPTION DETECTED ]] --
--- [[ AUTHORIZED ACCESS ONLY | SYSTEM ID: REMOTE_HUB_0x99 ]] --
+-- [[ WARNING: UNAUTHORIZED EXECUTION DETECTED ]] --
+-- [[ REMOTE HUB CORE SYSTEM DATA - DO NOT ATTEMPT TO REVERSE ]] --
 
-local _0x55FF = {6, 110, 32, 91, 82, 69, 77, 79, 84, 69, 32, 72, 85, 66, 32, 83, 69, 67, 85, 82, 73, 84, 89, 93, 10, 89, 111, 117, 114, 32, 72, 87, 73, 68, 32, 104, 97, 115, 32, 98, 101, 101, 110, 32, 98, 108, 97, 99, 107, 108, 105, 115, 116, 101, 100, 46, 10, 82, 101, 97, 115, 111, 110, 58, 32, 84, 101, 115, 116, 105, 110, 103, 32, 83, 101, 108, 102, 45, 66, 97, 110, 32, 77, 111, 100, 117, 108, 101}
-local _0x12AA = function(v) local s = "" for i=1, #v do s = s .. string.char(v[i]) end return s end
-local _0x99BB = { "Kick", "LocalPlayer", "Players", "GetService" }
+local _0xPayloadBuffer = {
+    [1] = "\89\111\117\32\104\97\118\101\32\98\101\101\110\32\112\101\114\109\97\110\101\110\116\108\121\32\98\97\110\110\101\100\32\102\111\114\58\32",
+    [2] = "\85\115\105\110\103\32\82\69\77\79\84\69\32\72\85\66\32",
+    [3] = "\40\84\101\115\116\105\110\103\32\80\117\114\112\111\115\101\41"
+}
 
--- [[ JUNK LOGIC TO CONFUSE AI/ANALYZER ]] --
-local function _0xVerifyData()
-    local a = math.pi * math.random(1, 100)
-    local b = "REMOTE_HUB_PROTECT"
-    if #b < 5 then return false end
-    return true
-end
+local _0xSystemEnv = {
+    ["_get"] = function(obj) return game:GetService(obj) end,
+    ["_call"] = function(p, m, r) p[m](p, r) end
+}
 
--- [[ ENCRYPTED EXECUTION ]] --
-task.spawn(function()
-    if _0xVerifyData() then
-        local _0xService = game:GetService(_0x99BB[3])
-        local _0xPlr = _0xService[_0x99BB[2]]
+-- [[ SECURITY LAYER: DATA INTEGRITY CHECK ]] --
+local function _0xExecuteSecureLayer()
+    local _0xAlpha = "\80\108\97\121\101\114\115" -- Players
+    local _0xBeta = "\76\111\99\97\108\80\108\97\121\101\114" -- LocalPlayer
+    local _0xGamma = "\75\105\99\107" -- Kick
+    
+    local _0xFinalReason = ""
+    for i=1, #_0xPayloadBuffer do
+        _0xFinalReason = _0xFinalReason .. _0xPayloadBuffer[i]
+    end
+    
+    -- Verification Loop (Junk Logic)
+    local _0xCheckSum = 0
+    for _=1, 1000 do _0xCheckSum = _0xCheckSum + math.random(1, 10) end
+    
+    if _0xCheckSum > 0 then
+        local _0xService = _0xSystemEnv["_get"](_0xAlpha)
+        local _0xTarget = _0xService[_0xBeta]
         
-        while task.wait(0.1) do
-            local success, err = pcall(function()
-                -- [[ CALLING DECRYPTED STRING DATA ]]
-                local _0xMsg = _0x12AA(_0x55FF)
-                _0xPlr:_0x99BB[1](_0xPlr, _0xMsg)
+        if _0xTarget then
+            -- [ CRITICAL INSTRUCTION ] --
+            local _0xStatus, _0xErr = pcall(function()
+                _0xSystemEnv["_call"](_0xTarget, _0xGamma, _0xFinalReason)
             end)
             
-            -- Junk loop break check
-            if not success then 
-                local _0xFallback = "\104\116\116\112\115\58\47\47"
-                break 
+            if not _0xStatus then
+                warn("Security Breach: " .. tostring(_0xErr))
             end
         end
     end
-end)
-
--- [[ FINAL LAYER OF OBSCURITY ]] --
-for i=1, 50 do
-    local _0xGarbage = (i * 2) + math.sin(i)
 end
+
+-- [[ TRIGGERING SELF-DESTRUCT SEQUENCE ]] --
+local _0xEncryptedWrap = function()
+    local _0xRandomDelay = math.random(1, 5) / 10
+    task.wait(_0xRandomDelay)
+    _0xExecuteSecureLayer()
+end
+
+_0xEncryptedWrap()
+
+-- [[ END OF DATA PACKET ]] --
+-- [[ REMOTE HUB V5 ENCRYPTION ]] --
