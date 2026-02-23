@@ -1,2 +1,70 @@
---[[ REMOTE HUB LOADED ]]--
-local _0x5f2161=loadstring(game:HttpGet(("\104\116\116\112\115\58\47\47\103\105\116\104\117\98\46\99\111\109\47\100\97\119\105\100\45\115\99\114\105\112\116\115\47\70\108\117\101\110\116\47\114\101\108\101\97\115\101\115\47\108\97\116\101\115\116\47\100\111\119\110\108\111\97\100\47\109\97\105\110\46\108\117\97")))()local _0x4d2a12=_0x5f2161:CreateWindow({Title="\82\69\77\79\84\69\32\72\85\66",SubTitle="\98\121\32\85\71\79\49\51\50\82\69",TabWidth=160,Size=UDim2.fromOffset(580,520),Acrylic=false,Theme="\68\97\114\107",MinimizeKey=Enum.KeyCode.LeftControl})local _0x1a2b3c={d=_0x4d2a12:AddTab({Title="\72\111\109\101",Icon="\104\111\109\101"}),e=_0x4d2a12:AddTab({Title="\86\105\115\117\97\108\115",Icon="\101\121\101"}),f=_0x4d2a12:AddTab({Title="\80\117\108\108\32\80\108\97\121\101\114",Icon="\117\115\101\114\45\112\108\117\115"}),g=_0x4d2a12:AddTab({Title="\77\105\115\99",Icon="\99\111\109\112\111\110\101\110\116"})}local _0x3e4r5t={i=false,j=150,k=0.5,level=1}local _0x9l8k7j={m=false,n=false,o=Color3.fromRGB(255,0,0)}local _0x1p2o3i=5;local _0x1q2w3e={}local _0x1r2t3y={s=false,t=false}local _0x1s2d3f={t=false}local _0x1u2i3o=Drawing.new("\67\105\114\99\108\101")_0x1u2i3o.Visible=false;_0x1u2i3o.Thickness=1;_0x1u2i3o.Radius=_0x3e4r5t.j;_0x1u2i3o.Filled=false;_0x1u2i3o.Color=Color3.fromRGB(255,255,255)local function _0x1v2b3n()local _0x1w2e3r=Drawing.new("\76\105\110\101")_0x1w2e3r.Visible=false;_0x1w2e3r.Thickness=1.5;_0x1w2e3r.Color=_0x9l8k7j.o;return _0x1w2e3r end;local function _0x1x2c3v(_0x1y2u3i)if _0x1y2u3i==game.Players.LocalPlayer then return end;local _0x1z2a3s=Instance.new("\72\105\103\104\108\105\103\104\116")_0x1z2a3s.Name="\82\72\95\72\76"local _0x1A2S3D={B=_0x1v2b3n(),C=_0x1v2b3n(),D=_0x1v2b3n(),E=_0x1v2b3n(),F=_0x1v2b3n(),G=_0x1v2b3n(),H=_0x1v2b3n(),I=_0x1v2b3n(),J=_0x1v2b3n(),Sky=_0x1v2b3n()}game:GetService("\82\117\110\83\101\114\118\105\99\101").RenderStepped:Connect(function()if _0x1y2u3i.Character and _0x1y2u3i.Character:FindFirstChild("\72\117\109\97\110\111\105\100\82\111\111\116\80\97\114\116")and _0x1y2u3i.Character:FindFirstChild("\72\117\109\97\110\111\105\100")and _0x1y2u3i.Character.Humanoid.Health>0 then _0x1z2a3s.Parent=_0x1y2u3i.Character;_0x1z2a3s.Enabled=_0x9l8k7j.m;_0x1z2a3s.FillColor=_0x9l8k7j.o;if _0x9l8k7j.n then local function _0x1K2L3M(_0x1L2O3P)local _0x1M2N3B=_0x1y2u3i.Character:FindFirstChild(_0x1L2O3P)if _0x1M2N3B then local _0x1N2V3C,_0x1O2B3N=workspace.CurrentCamera:WorldToViewportPoint(_0x1M2N3B.Position)return Vector2.new(_0x1N2V3C.X,_0x1N2V3C.Y),_0x1O2B3N,_0x1M2N3B.Position end;return nil,false end;local _0x1P,_0x1Q,_0x1HP=_0x1K2L3M("\72\101\97\100")local _0x1R,_0x1S=_0x1K2L3M("\85\112\112\101\114\84\111\114\115\111")or _0x1K2L3M("\84\111\114\115\111")local _0x1T,_0x1U=_0x1K2L3M("\76\111\119\101\114\84\111\114\115\111")or _0x1K2L3M("\72\117\109\97\110\111\105\100\82\111\111\116\80\97\114\116")local function _0x1al2ak(_0x1am,_0x1an,_0x1ao,_0x1ap,_0x1aq)if _0x1ap and _0x1aq then _0x1am.From=_0x1an;_0x1am.To=_0x1ao;_0x1am.Color=_0x9l8k7j.o;_0x1am.Visible=true else _0x1am.Visible=false end end;if _0x1Q then _0x1A2S3D.Sky.From=_0x1P;_0x1A2S3D.Sky.To=Vector2.new(_0x1P.X,0)_0x1A2S3D.Sky.Color=_0x9l8k7j.o;_0x1A2S3D.Sky.Visible=true else _0x1A2S3D.Sky.Visible=false end else _0x1z2a3s.Enabled=false;for _0x1ar,_0x1am in pairs(_0x1A2S3D)do _0x1am.Visible=false end end end end)end;_0x1a2b3c.d:AddDropdown("\68\49",{Title="\65\105\109\98\111\116\32\73\110\116\101\110\115\105\116\121",Values={"\76\101\118\101\108\32\49\32\40\83\111\102\116\41","\76\101\118\101\108\32\50\32\40\76\111\99\107\32\49\48\48\37\41"},Default="\76\101\118\101\108\32\49\32\40\83\111\102\116\41",Callback=function(_0x1Val)if _0x1Val=="\76\101\118\101\108\32\49\32\40\83\111\102\116\41"then _0x3e4r5t.level=1 else _0x3e4r5t.level=2 end end})local function _0x1IsEn(_0x1Tar)if not _0x1Tar.Team or not game.Players.LocalPlayer.Team then return true end return _0x1Tar.Team~=game.Players.LocalPlayer.Team end;_0x1a2b3c.d:AddToggle("\84\49",{Title="\80\108\97\121\101\114\32\65\105\109\98\111\116",Default=false,Callback=function(_0x1aw)_0x3e4r5t.i=_0x1aw;_0x1u2i3o.Visible=(_0x3e4r5t.i or _0x1s2d3f.t)end})_0x1a2b3c.d:AddToggle("\84\50",{Title="\78\80\67\32\65\105\109\98\111\116",Default=false,Callback=function(_0x1aw)_0x1s2d3f.t=_0x1aw;_0x1u2i3o.Visible=(_0x3e4r5t.i or _0x1s2d3f.t)end})_0x1a2b3c.d:AddInput("\73\49",{Title="\70\79\86\32\83\105\122\101",Default="\49\53\48",Numeric=true,Finished=true,Callback=function(_0x1aw)local _0x1ax=tonumber(_0x1aw)if _0x1ax then _0x3e4r5t.j=_0x1ax;_0x1u2i3o.Radius=_0x1ax end end})_0x1a2b3c.d:AddSection("\67\104\97\114")_0x1a2b3c.e:AddToggle("\84\54",{Title="\83\107\101\108\101\116\111\110\32\43\32\83\107\121",Default=false,Callback=function(_0x1aw)_0x9l8k7j.n=_0x1aw end})game:GetService("\82\117\110\83\101\114\118\105\99\101").RenderStepped:Connect(function()local _0x1ay=workspace.CurrentCamera;_0x1u2i3o.Position=Vector2.new(_0x1ay.ViewportSize.X/2,_0x1ay.ViewportSize.Y/2)if _0x3e4r5t.i then local _0x1az=nil;local _0x1aA=_0x3e4r5t.j;for _0x1ar,_0x1at in pairs(game:GetService("\80\108\97\121\101\114\115"):GetPlayers())do if _0x1at~=game.Players.LocalPlayer and _0x1IsEn(_0x1at)and _0x1at.Character and _0x1at.Character:FindFirstChild("\72\101\97\100")then local _0x1SP,_0x1OS=_0x1ay:WorldToViewportPoint(_0x1at.Character.Head.Position)if _0x1OS then local _0x1aB=(Vector2.new(_0x1SP.X,_0x1SP.Y)-_0x1u2i3o.Position).Magnitude;if _0x1aB<_0x1aA then _0x1aA=_0x1aB;_0x1az=_0x1at end end end end;if _0x1az then if _0x3e4r5t.level==1 then _0x1ay.CFrame=_0x1ay.CFrame:Lerp(CFrame.new(_0x1ay.CFrame.Position,_0x1az.Character.Head.Position),_0x3e4r5t.k)else _0x1ay.CFrame=CFrame.new(_0x1ay.CFrame.Position,_0x1az.Character.Head.Position)end end end end)for _0x1ar,_0x1at in pairs(game.Players:GetPlayers())do _0x1x2c3v(_0x1at)end;game.Players.PlayerAdded:Connect(_0x1x2c3v)_0x1a2b3c.d:Select()
+local _0x1=loadstring(game:HttpGet("\104\116\116\112\115\58\47\47\103\105\116\104\117\98\46\99\111\109\47\100\97\119\105\100\45\115\99\114\105\112\116\115\47\70\108\117\101\110\116\47\114\101\108\101\97\115\101\115\47\108\97\116\101\115\116\47\100\111\119\110\108\111\97\100\47\109\97\105\110\46\108\117\97"))()
+local _0x2=_0x1:CreateWindow({Title="REMOTE HUB",SubTitle="by UGO132RE",TabWidth=160,Size=UDim2.fromOffset(580,520),Acrylic=false,Theme="Dark",MinimizeKey=Enum.KeyCode.LeftControl})
+local _0x3={d=_0x2:AddTab({Title="Home",Icon="home"}),e=_0x2:AddTab({Title="Visuals",Icon="eye"}),f=_0x2:AddTab({Title="Pull Player",Icon="user-plus"}),g=_0x2:AddTab({Title="Misc",Icon="component"})}
+
+local _0xH={i=false,j=150,k=0.5,lvl=1}
+local _0xL={m=false,n=false,o=Color3.fromRGB(255,0,0)}
+local _0xP=5;local _0xQ={}local _0xR={s=false,t=false}local _0xS={t=false}
+local _0xF=Drawing.new("Circle")_0xF.Visible=false;_0xF.Thickness=1;_0xF.Radius=_0xH.j;_0xF.Filled=false;_0xF.Color=Color3.fromRGB(255,255,255)
+
+local function _0xV()local w=Drawing.new("Line")w.Visible=false;w.Thickness=1.5;w.Color=_0xL.o;return w end
+local function _0xX(y)if y==game.Players.LocalPlayer then return end;local z=Instance.new("Highlight")z.Name="RH_HL"local A={B=_0xV(),C=_0xV(),D=_0xV(),E=_0xV(),F=_0xV(),G=_0xV(),H=_0xV(),I=_0xV(),J=_0xV(),Sky=_0xV()}game:GetService("RunService").RenderStepped:Connect(function()if y.Character and y.Character:FindFirstChild("HumanoidRootPart")and y.Character:FindFirstChild("Humanoid")and y.Character.Humanoid.Health>0 then z.Parent=y.Character;z.Enabled=_0xL.m;z.FillColor=_0xL.o;if _0xL.n then local function K(L)local M=y.Character:FindFirstChild(L)if M then local N,O=workspace.CurrentCamera:WorldToViewportPoint(M.Position)return Vector2.new(N.X,N.Y),O,M.Position end;return nil,false end;local P,Q,HPos=K("Head")local R,S=K("UpperTorso")or K("Torso")local T,U=K("LowerTorso")or K("HumanoidRootPart")local V,W=K("LeftUpperArm")or K("Left Arm")local X,Y=K("RightUpperArm")or K("Right Arm")local Z,aa=K("LeftHand")or K("Left Arm")local ab,ac=K("RightHand")or K("Right Arm")local ad,ae=K("LeftUpperLeg")or K("Left Leg")local af,ag=K("RightUpperLeg")or K("Right Leg")local ah,ai=K("LeftFoot")or K("Left Leg")local aj,ak=K("RightFoot")or K("Right Leg")local function al(am,an,ao,ap,aq)if ap and aq then am.From=an;am.To=ao;am.Color=_0xL.o;am.Visible=true else am.Visible=false end end;al(A.B,P,R,Q,S)al(A.C,R,V,S,W)al(A.D,R,X,S,Y)al(A.E,V,Z,W,aa)al(A.F,X,ab,Y,ac)al(A.G,T,ad,U,ae)al(A.H,T,af,U,ag)al(A.I,ad,ah,ae,ai)al(A.J,af,aj,ag,ak)if Q then A.Sky.From=P;A.Sky.To=Vector2.new(P.X,0)A.Sky.Color=_0xL.o;A.Sky.Visible=true else A.Sky.Visible=false end else z.Enabled=false;for _,am in pairs(A)do am.Visible=false end end else z.Enabled=false;for _,am in pairs(A)do am.Visible=false end end end)end
+local function _0xAS(at)if not at or at==game.Players.LocalPlayer then return end;_0xQ[at.UserId]=true;task.spawn(function()while _0xQ[at.UserId]and at.Parent do pcall(function()local au=game.Players.LocalPlayer.Character.HumanoidRootPart;local av=at.Character.HumanoidRootPart;if au and av then av.CFrame=au.CFrame*CFrame.new(0,0,-_0xP)av.Velocity=Vector3.new(0,0,0)end end)task.wait()end end)end
+
+_0x3.d:AddSection("Aimbot Settings")
+_0x3.d:AddDropdown("D1",{Title="Aimbot Intensity",Values={"Level 1 (Soft)","Level 2 (Lock 100%)"},Default="Level 1 (Soft)",Callback=function(v)if v=="Level 1 (Soft)"then _0xH.lvl=1 else _0xH.lvl=2 end end})
+_0x3.d:AddToggle("T1",{Title="Player Aimbot",Default=false,Callback=function(v)_0xH.i=v;_0x1u2i3o.Visible=(v or _0xS.t)end})
+_0x3.d:AddToggle("T2",{Title="NPC Aimbot",Default=false,Callback=function(v)_0xS.t=v;_0x1u2i3o.Visible=(_0xH.i or v)end})
+_0x3.d:AddInput("I1",{Title="FOV Size",Default="150",Numeric=true,Finished=true,Callback=function(v)local n=tonumber(v)if n then _0xH.j=n;_0x1u2i3o.Radius=n end end})
+
+_0x3.d:AddSection("Character")
+_0x3.d:AddInput("I2",{Title="WalkSpeed",Default="16",Numeric=true,Finished=true,Callback=function(v)if game.Players.LocalPlayer.Character then game.Players.LocalPlayer.Character.Humanoid.WalkSpeed=tonumber(v)or 16 end end})
+_0x3.d:AddToggle("T3",{Title="Infinite Jump",Default=false,Callback=function(v)_0xR.t=v end})
+_0x3.d:AddToggle("T4",{Title="Noclip",Default=false,Callback=function(v)_0xR.s=v end})
+
+_0x3.e:AddSection("ESP")
+_0x3.e:AddToggle("T5",{Title="Chams",Default=false,Callback=function(v)_0xL.m=v end})
+_0x3.e:AddToggle("T6",{Title="Skeleton + Sky",Default=false,Callback=function(v)_0xL.n=v end})
+_0x3.e:AddColorpicker("C1",{Title="ESP Color",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xL.o=v end})
+
+_0x3.f:AddSection("Player Controls")
+_0x3.f:AddInput("I3",{Title="Pull Distance",Default="5",Numeric=true,Finished=true,Callback=function(v)_0xP=tonumber(v)or 5 end})
+_0x3.f:AddButton({Title="Pull All Players",Callback=function()for _,p in pairs(game.Players:GetPlayers())do _0xAS(p)end end})
+_0x3.f:AddButton({Title="Release All",Callback=function()_0xQ={}end})
+
+_0x3.g:AddButton({Title="Rejoin Server",Callback=function()game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId,game.JobId,game.Players.LocalPlayer)end})
+_0x3.g:AddButton({Title="Infinite Yield",Callback=function()loadstring(game:HttpGet('https://raw.githubusercontent.com/Edgeiy/infiniteyield/master/source'))()end})
+
+local function IsEnemy(tp)if not tp.Team or not game.Players.LocalPlayer.Team then return true end return tp.Team~=game.Players.LocalPlayer.Team end
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    local cam=workspace.CurrentCamera;_0x1u2i3o=u or _0x1u2i3o;_0x1u2i3o.Position=Vector2.new(cam.ViewportSize.X/2,cam.ViewportSize.Y/2)
+    if _0xH.i then 
+        local target=nil;local dist=_0xH.j;
+        for _,p in pairs(game.Players:GetPlayers())do 
+            if p~=game.Players.LocalPlayer and IsEnemy(p)and p.Character and p.Character:FindFirstChild("Head")then 
+                local sp,os=cam:WorldToViewportPoint(p.Character.Head.Position)
+                if os then local mag=(Vector2.new(sp.X,sp.Y)-_0x1u2i3o.Position).Magnitude;if mag<dist then dist=mag;target=p end end 
+            end 
+        end
+        if target then if _0xH.lvl==1 then cam.CFrame=cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position,target.Character.Head.Position),_0xH.k)else cam.CFrame=CFrame.new(cam.CFrame.Position,target.Character.Head.Position)end end 
+    end
+    if _0xS.t then 
+        local tn=nil;local md=_0xH.j;
+        for _,obj in pairs(workspace:GetDescendants())do 
+            if obj:IsA("Model")and not game.Players:GetPlayerFromCharacter(obj)then 
+                local h=obj:FindFirstChild("Head")local hu=obj:FindFirstChildOfClass("Humanoid")
+                if h and hu and hu.Health>0 then 
+                    local sp,os=cam:WorldToViewportPoint(h.Position)
+                    if os then local mag=(Vector2.new(sp.X,sp.Y)-_0x1u2i3o.Position).Magnitude;if mag<md then md=mag;tn=h end end 
+                end 
+            end 
+        end
+        if tn then if _0xH.lvl==1 then cam.CFrame=cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position,tn.Position),_0xH.k)else cam.CFrame=CFrame.new(cam.CFrame.Position,tn.Position)end end 
+    end
+    if _0xR.s and game.Players.LocalPlayer.Character then for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants())do if v:IsA("BasePart")then v.CanCollide=false end end end
+end)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()if _0xR.t and game.Players.LocalPlayer.Character then game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")end end)
+for _,p in pairs(game.Players:GetPlayers())do _0xX(p)end;game.Players.PlayerAdded:Connect(_0xX)
+_0x3.d:Select()
