@@ -22,7 +22,7 @@ MainFrame.Size = UDim2.new(0, 320, 0, 160)
 MainFrame.Position = UDim2.new(0.5, -160, 0.4, -80)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BorderSizePixel = 0
-MainFrame.Active = true -- เปิดเพื่อให้ Frame รับ Input
+MainFrame.Active = true 
 
 local MainCorner = Instance.new("UICorner", MainFrame)
 MainCorner.CornerRadius = UDim.new(0, 8)
@@ -66,7 +66,7 @@ local function TriggerRGB()
         if elapsed < 3 then
             local hue = (tick() * 7) % 1
             LuckyBtn.BackgroundColor3 = Color3.fromHSV(hue, 0.8, 1)
-            LuckyBtn.Text = "Lucky🤑🤑🤑..."
+            LuckyBtn.Text = "Lucky🦅🦅🦅🦅..."
         else
             connection:Disconnect()
             LuckyBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
