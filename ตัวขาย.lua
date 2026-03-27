@@ -5,20 +5,15 @@
 local _0xOwner = "\85\71\79\49\51\50\82\69" -- UGO132RE
 local _0xHub = "\82\69\77\79\84\69\32\72\85\66" -- REMOTE HUB
 
--- [ IMPROVED SECURITY LOGIC ] --
-local function _0xTrap()
-    local _0xG = game:GetService("\103\101\110\101\114\105\110\103")
-    while true do
-        for i = 1, 500 do
-            Instance.new("\80\97\114\116", workspace).Transparency = 1
-        end
-        task.wait()
+-- [ SIMPLE VERIFICATION - NO TRAP ] --
+local function _0xVerify()
+    if _0xOwner ~= "\85\71\79\49\51\50\82\69" or _0xHub ~= "\82\69\77\79\84\69\32\72\85\66" then
+        return false
     end
+    return true
 end
 
-if _0xOwner ~= "\85\71\79\49\51\50\82\69" or _0xHub ~= "\82\69\77\79\84\69\32\72\85\66" then
-    _0xTrap()
-end
+if not _0xVerify() then return end
 
 local _0xPayload = function()
     local _0xSource = function() 
@@ -61,15 +56,14 @@ local _0xPayload = function()
         end
 
         local function _0xL() local l=Drawing.new("\76\105\110\101")l.Visible=false;l.Thickness=1.5;return l end
-        
-        -- [ HOME SECTION ]
-        _0xT.h:AddSection("\65\105\109\98\111\116\32\83\121\115\116\101\109")
+
+        -- [ HOME ]
+        _0xT.h:AddSection("\65\105\109\98\111\116")
         _0xT.h:AddToggle("T1",{Title="\65\105\109\98\111\116\32\77\97\115\116\101\114",Default=false,Callback=function(v)_0xO.i=v;_0xF.Visible=v end})
         _0xT.h:AddToggle("T_Team",{Title="\84\101\97\109\32\67\104\101\99\107",Default=true,Callback=function(v)_0xO.tc=v end})
         _0xT.h:AddToggle("T_Vis",{Title="\86\105\115\105\98\108\101\32\67\104\101\99\107",Default=true,Callback=function(v)_0xO.vis=v end})
-        _0xT.h:AddToggle("T_LED",{Title="\82\71\66\32\70\79\86\32\69\102\102\101\99\116",Default=false,Callback=function(v)_0xO.led=v end})
         _0xT.h:AddInput("I_Sm",{Title="\83\109\111\111\116\104\110\101\115\115",Default="0.5",Callback=function(v)_0xO.sm = math.clamp(tonumber(v) or 0.5, 0.01, 1) end})
-        _0xT.h:AddInput("I1",{Title="\70\79\86\32\82\97\100\105\117\115",Default="150",Callback=function(v)_0xO.fov=tonumber(v)or 150;_0xF.Radius=_0xO.fov end})
+        _0xT.h:AddInput("I1",{Title="\70\79\86\32\83\105\122\101",Default="150",Callback=function(v)_0xO.fov=tonumber(v)or 150;_0xF.Radius=_0xO.fov end})
 
         _0xT.h:AddSection("\67\104\97\114\97\93\116\101\114")
         _0xT.h:AddInput("I2",{Title="\87\97\108\107\83\112\101\101\100",Default="16",Callback=function(v)_0xR.speed=tonumber(v)or 16 end})
@@ -78,17 +72,16 @@ local _0xPayload = function()
 
         -- [ VISUALS ]
         _0xT.v:AddToggle("V1",{Title="\67\104\97\109\115",Default=false,Callback=function(v)_0xV.chams=v end})
-        _0xT.v:AddToggle("V2",{Title="\83\107\101\108\101\116\111\110\32\86\105\101\119",Default=false,Callback=function(v)_0xV.skel=v end})
-        _0xT.v:AddColorpicker("C1",{Title="\69\83\80\32\67\111\108\111\114",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xV.col=v end})
+        _0xT.v:AddToggle("V2",{Title="\83\107\101\108\101\116\111\110",Default=false,Callback=function(v)_0xV.skel=v end})
+        _0xT.v:AddColorpicker("C1",{Title="\67\111\108\111\114",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xV.col=v end})
         
         -- [ MISC ]
         _0xT.m:AddButton({Title="\73\110\102\105\110\105\116\101\32\89\105\101\108\100",Callback=function()loadstring(game:HttpGet('\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\69\100\103\101\105\121\47\105\110\102\105\110\105\116\101\121\105\101\108\100\47\109\97\115\116\101\114\47\115\111\114\99\101'))()end})
 
-        -- [ MAIN LOOP ]
+        -- [ MAIN LOGIC ]
         game:GetService("\82\117\110\83\101\114\118\105\99\101").RenderStepped:Connect(function()
             local cam = workspace.CurrentCamera
             _0xF.Position = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y/2)
-            _0xF.Color = (_0xO.led and Color3.fromHSV(tick()%5/5,1,1) or Color3.fromRGB(255,255,255))
             
             if _0xO.i and _0xO.locking then
                 local target = nil; local dist = _0xO.fov;
@@ -117,8 +110,7 @@ local _0xPayload = function()
         _0xW:SelectTab(_0xT.h)
     end
     
-    local success, err = pcall(_0xSource)
-    if not success then warn("[REMOTE HUB ERROR]: " .. tostring(err)) end
+    pcall(_0xSource)
 end
 
 _0xPayload()
