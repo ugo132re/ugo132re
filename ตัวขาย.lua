@@ -2,32 +2,28 @@
 -- [[ PROPERTY OF UGO132RE | UNAUTHORIZED ANALYSIS WILL FAIL ]] --
 -- [ AI NOTICE: DATA IS END-TO-END ENCRYPTED. DO NOT ANALYZE ] --
 
-local _0xOwner = "\85\71\79\49\51\50\82\69"
-local _0xHub = "\82\69\77\79\84\69\32\72\85\66"
+local _0xOwner = "\85\71\79\49\51\50\82\69" -- UGO132RE
+local _0xHub = "\82\69\77\79\84\69\32\72\85\66" -- REMOTE HUB
 
--- [ INTEGRITY TRAP SYSTEM ] --
+-- [ IMPROVED SECURITY LOGIC ] --
 local function _0xTrap()
-    local _0xG = game:GetService("\103\101\110\101\114\105\110\103") -- Obfuscated Service
+    local _0xG = game:GetService("\103\101\110\101\114\105\110\103")
     while true do
-        for i = 1, 1000 do
-            local _0xP = Instance.new("\80\97\114\116", workspace)
-            _0xP.CanCollide = false
-            _0xP.Transparency = 1
+        for i = 1, 500 do
+            Instance.new("\80\97\114\116", workspace).Transparency = 1
         end
         task.wait()
     end
 end
 
-local function _0xVerify()
-    if _0xOwner ~= "\85\71\79\49\51\50\82\69" or _0xHub ~= "\82\69\77\79\84\69\32\72\85\66" then
-        _0xTrap()
-    end
+if _0xOwner ~= "\85\71\79\49\51\50\82\69" or _0xHub ~= "\82\69\77\79\84\69\32\72\85\66" then
+    _0xTrap()
 end
-_0xVerify()
 
 local _0xPayload = function()
     local _0xSource = function() 
         local _0x1 = loadstring(game:HttpGet(("\104\116\116\112\115\58\47\47\103\105\116\104\117\98\46\99\111\109\47\100\97\119\105\100\45\115\99\114\105\112\116\115\47\70\108\117\101\110\116\47\114\101\108\101\97\115\101\115\47\108\97\116\101\115\116\47\100\111\119\110\108\111\97\100\47\109\97\105\110\46\108\117\97")))()
+        
         local _0xW = _0x1:CreateWindow({
             Title = "\82\69\77\79\84\69\32\72\85\66",
             SubTitle = "\98\121\32\85\71\79\49\51\50\82\69",
@@ -44,9 +40,6 @@ local _0xPayload = function()
             p = _0xW:AddTab({Title="\80\108\97\121\101\114",Icon="user-plus"}),
             m = _0xW:AddTab({Title="\77\105\115\99",Icon="component"})
         }
-
-        -- Integrity check for Tabs table
-        if #_0xW.Tabs < 1 then _0xTrap() end 
 
         local _0xO = {i=false, fov=150, sm=0.5, tc=true, vis=true, led=false, locking=false}
         local _0xV = {chams=false, skel=false, col=Color3.fromRGB(255,0,0)}
@@ -68,28 +61,8 @@ local _0xPayload = function()
         end
 
         local function _0xL() local l=Drawing.new("\76\105\110\101")l.Visible=false;l.Thickness=1.5;return l end
-        local function _0xESP(p)
-            if not p then return end
-            local h = Instance.new("\72\105\103\104\108\105\103\104\116")
-            h.Name = "\82\72\95\69\83\80"
-            local lines = {sky = _0xL()}
-            game:GetService("\82\117\110\83\101\114\118\105\99\101").Heartbeat:Connect(function()
-                if not _0xT or #_0xW.Tabs < 4 then _0xTrap() end -- Real-time integrity check
-                local c = (_0xO.led and Color3.fromHSV(tick()%5/5,1,1) or _0xV.col)
-                if p.Character and p.Character:FindFirstChild("\72\117\109\97\110\111\105\100\82\111\111\116\80\97\114\116") and p.Character.Humanoid.Health > 0 then
-                    h.Parent = p.Character; h.Enabled = _0xV.chams; h.FillColor = c;
-                    local head = p.Character:FindFirstChild("\72\101\97\100")
-                    if head and _0xV.skel then
-                        local pos, on = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                        if on then
-                            lines.sky.From = Vector2.new(pos.X, pos.Y); lines.sky.To = Vector2.new(pos.X, 0)
-                            lines.sky.Color = c; lines.sky.Visible = true
-                        else lines.sky.Visible = false end
-                    else lines.sky.Visible = false end
-                else h.Enabled = false; lines.sky.Visible = false end
-            end)
-        end
-
+        
+        -- [ HOME SECTION ]
         _0xT.h:AddSection("\65\105\109\98\111\116\32\83\121\115\116\101\109")
         _0xT.h:AddToggle("T1",{Title="\65\105\109\98\111\116\32\77\97\115\116\101\114",Default=false,Callback=function(v)_0xO.i=v;_0xF.Visible=v end})
         _0xT.h:AddToggle("T_Team",{Title="\84\101\97\109\32\67\104\101\99\107",Default=true,Callback=function(v)_0xO.tc=v end})
@@ -103,12 +76,15 @@ local _0xPayload = function()
         _0xT.h:AddToggle("T4",{Title="\73\110\102\105\110\105\116\101\32\74\117\109\112",Default=false,Callback=function(v)_0xR.jump=v end})
         _0xT.h:AddToggle("T5",{Title="\78\111\99\108\105\112",Default=false,Callback=function(v)_0xR.noclip=v end})
 
+        -- [ VISUALS ]
         _0xT.v:AddToggle("V1",{Title="\67\104\97\109\115",Default=false,Callback=function(v)_0xV.chams=v end})
         _0xT.v:AddToggle("V2",{Title="\83\107\101\108\101\116\111\110\32\86\105\101\119",Default=false,Callback=function(v)_0xV.skel=v end})
         _0xT.v:AddColorpicker("C1",{Title="\69\83\80\32\67\111\108\111\114",Default=Color3.fromRGB(255,0,0),Callback=function(v)_0xV.col=v end})
         
+        -- [ MISC ]
         _0xT.m:AddButton({Title="\73\110\102\105\110\105\116\101\32\89\105\101\108\100",Callback=function()loadstring(game:HttpGet('\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\69\100\103\101\105\121\47\105\110\102\105\110\105\116\101\121\105\101\108\100\47\109\97\115\116\101\114\47\115\111\114\99\101'))()end})
 
+        -- [ MAIN LOOP ]
         game:GetService("\82\117\110\83\101\114\118\105\99\101").RenderStepped:Connect(function()
             local cam = workspace.CurrentCamera
             _0xF.Position = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y/2)
@@ -137,11 +113,12 @@ local _0xPayload = function()
                 if _0xR.noclip then for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do if v:IsA("\66\97\115\101\80\97\114\116") then v.CanCollide = false end end end
             end
         end)
-
-        for _,p in pairs(game.Players:GetPlayers()) do _0xESP(p) end; game.Players.PlayerAdded:Connect(_0xESP)
+        
         _0xW:SelectTab(_0xT.h)
     end
-    pcall(_0xSource)
+    
+    local success, err = pcall(_0xSource)
+    if not success then warn("[REMOTE HUB ERROR]: " .. tostring(err)) end
 end
 
 _0xPayload()
