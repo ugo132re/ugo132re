@@ -1,31 +1,13 @@
--- [[ REMOTE HUB SECURITY PROTOCOL: GOD MODE MODULE ]] --
--- [[ ENCODING: ASCII | PROTECTION: METATABLE HOOK ]] --
+-- [[ REMOTE HUB: UNDEAD MODULE ]] --
+local lp = game:GetService("\80\108\97\121\101\114\115").LocalPlayer
+local char = lp.Character or lp.CharacterAdded:Wait()
+local hum = char:WaitForChild("\72\117\109\97\110\111\105\100")
 
-local _0xGM = { enabled = true }
-local _0xTargetRemotes = {"\84\97\107\101\68\97\109\97\103\101", "\72\105\116", "\68\97\109\97\103\101"} -- "TakeDamage", "Hit", "Damage"
+-- สั่งปิดสถานะการตาย
+hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
 
-local _0xMT = getrawmetatable(game)
-local _0xOld = _0xMT.__namecall
-setreadonly(_0xMT, false)
-
-_0xMT.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-    
-    -- [[ CHECK IF GOD MODE IS ACTIVE ]] --
-    if _0xGM.enabled and method == "\70\105\114\101\83\101\114\118\101\114" then
-        for _, remoteName in pairs(_0xTargetRemotes) do
-            if self.Name:find(remoteName) then
-                -- [ SECURITY LOG: DAMAGE EVENT BLOCKED ] --
-                return nil 
-            end
-        end
-    end
-    
-    return _0xOld(self, ...)
-end)
-
-setreadonly(_0xMT, true)
-
--- [[ OPTIONAL: ADD TO YOUR PLAYER TAB ]] --
--- _0xT.p:AddToggle("T_God",{Title="God Mode (Stealth)",Default=false,Callback=function(v)_0xGM.enabled=v end})
+-- ลบปลั๊กที่ทำให้ตัวละครหลุดออกจากกันเมื่อตาย
+if char:FindFirstChild("\100\101\115\116\114\111\121") then
+    char.BreakJointsOnDeath = false
+end
