@@ -1,6 +1,12 @@
--- [[ REMOTE HUB: TOUCH BYPASS ]] --
-for _, v in pairs(game:GetService("\80\108\97\121\101\114\115").LocalPlayer.Character:GetDescendants()) do
-    if v:IsA("\84\111\117\99\104\84\114\97\110\115\109\105\116\116\101\114") then
-        v:Destroy() -- ลบตัวส่งสัญญาณการสัมผัสทิ้ง
-    end
-end
+-- [[ REMOTE HUB: FAKE DEAD GOD MODE ]] --
+local player = game.Players.LocalPlayer
+local character = player.Character
+local humanoid = character:WaitForChild("Humanoid")
+
+-- ขั้นตอน: ลบ Humanoid แล้วสร้างใหม่เพื่อตัดการเชื่อมต่อดาเมจจาก Server
+local newHum = humanoid:Clone()
+newHum.Parent = character
+humanoid:Destroy()
+workspace.CurrentCamera.CameraSubject = character
+
+-- หมายเหตุ: วิธีนี้อาจทำให้ปุ่มควบคุมบางอย่างหายไป ต้องใส่ระบบเดินใหม่เข้าไป
