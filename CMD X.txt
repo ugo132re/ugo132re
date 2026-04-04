@@ -8,56 +8,67 @@ import ctypes
 import threading
 import tkinter as tk
 import os
+import time
 
+# Load Model with Half Precision (Fast Mode)
 model = YOLO('yolov8n.pt')
-fov_size = 400
+fov_size = 300 # Reduced FOV for Speed
 
 def ai_loop(screen_w, screen_h):
     user32 = ctypes.windll.user32
     left = int((screen_w / 2) - (fov_size / 2))
     top = int((screen_h / 2) - (fov_size / 2))
     monitor = {"top": top, "left": left, "width": fov_size, "height": fov_size}
+    
     center_x = fov_size / 2
     center_y = fov_size / 2
 
-    print("--- REMOTE HUB: PRO SYSTEM + FOV ONLINE ---")
+    print("--- REMOTE HUB: ULTRA LOW LATENCY V5 ---")
 
     with mss.mss() as sct:
         while True:
             if mouse.is_pressed(button='right'):
+                # Grab screen and predict
                 img = np.array(sct.grab(monitor))
                 frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-                results = model.predict(frame, stream=True, conf=0.45, classes=[0], verbose=False)
+                
+                # Increase Confidence (0.6) to avoid false targets
+                results = model.predict(frame, stream=True, conf=0.6, classes=[0], verbose=False, imgsz=320)
                 
                 for r in results:
                     boxes = r.boxes
                     if len(boxes) > 0:
-                        dist_min = float('inf')
-                        best_box = None
+                        # Find nearest target to crosshair
+                        best_target = None
+                        min_dist = float('inf')
                         
                         for box in boxes:
-                            x1, y1, x2, y2 = box.xyxy[0]
+                            x1, y1, x2, y2 = box.xyxy[0].tolist()
                             cx = (x1 + x2) / 2
-                            cy = y1 + (y2 - y1) * 0.15
+                            cy = y1 + (y2 - y1) * 0.12 # Neck/Head level
                             
                             dist = ((cx - center_x)**2 + (cy - center_y)**2)**0.5
-                            if dist < dist_min:
-                                dist_min = dist
-                                best_box = (cx, cy)
+                            if dist < min_dist:
+                                min_dist = dist
+                                best_target = (cx, cy)
                         
-                        if best_box:
-                            target_x, target_y = best_box
-                            offset_x = target_x - center_x
-                            offset_y = target_y - center_y
+                        if best_target:
+                            tx, ty = best_target
+                            dx = tx - center_x
+                            dy = ty - center_y
                             
-                            move_x = int(offset_x * 0.45)
-                            move_y = int(offset_y * 0.45)
+                            # Speed calculation
+                            speed = 0.55 
+                            mx = int(dx * speed)
+                            my = int(dy * speed)
                             
-                            if abs(move_x) > 1 or abs(move_y) > 1:
-                                ctypes.windll.user32.mouse_event(0x0001, move_x, move_y, 0, 0)
+                            if abs(mx) > 1 or abs(my) > 1:
+                                ctypes.windll.user32.mouse_event(0x0001, mx, my, 0, 0)
+                
+                # Tiny sleep to sync with monitor refresh
+                time.sleep(0.001)
 
             if keyboard.is_pressed('f4'):
-                print("--- REMOTE HUB SHUTDOWN ---")
                 os._exit(0)
 
 def start_overlay():
@@ -66,7 +77,6 @@ def start_overlay():
     screen_h = user32.GetSystemMetrics(1)
     
     root = tk.Tk()
-    root.title("REMOTE HUB FOV")
     root.overrideredirect(True)
     root.geometry(f"{screen_w}x{screen_h}+0+0")
     root.attributes("-topmost", True)
@@ -76,16 +86,15 @@ def start_overlay():
     canvas = tk.Canvas(root, width=screen_w, height=screen_h, bg="black", highlightthickness=0)
     canvas.pack()
     
-    left = (screen_w / 2) - (fov_size / 2)
-    top = (screen_h / 2) - (fov_size / 2)
-    right = (screen_w / 2) + (fov_size / 2)
-    bottom = (screen_h / 2) + (fov_size / 2)
+    l = (screen_w / 2) - (fov_size / 2)
+    t = (screen_h / 2) - (fov_size / 2)
+    r = (screen_w / 2) + (fov_size / 2)
+    b = (screen_h / 2) + (fov_size / 2)
     
-    canvas.create_rectangle(left, top, right, bottom, outline="red", width=2)
+    canvas.create_rectangle(l, t, r, b, outline="cyan", width=1) # Thin FOV Box
     
-    ai_thread = threading.Thread(target=ai_loop, args=(screen_w, screen_h), daemon=True)
-    ai_thread.start()
-    
+    t1 = threading.Thread(target=ai_loop, args=(screen_w, screen_h), daemon=True)
+    t1.start()
     root.mainloop()
 
 if __name__ == "__main__":
