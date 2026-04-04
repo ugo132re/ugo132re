@@ -2,58 +2,63 @@ import cv2
 from ultralytics import YOLO
 import mss
 import numpy as np
-import pydirectinput
 import keyboard
 import mouse
+import ctypes
 
-model = YOLO('yolov8n.pt') 
+model = YOLO('yolov8n.pt')
 
 def start_remote_hub():
-    # กำหนดขอบเขตการมองเห็นกลางจอ
-    monitor = {"top": 220, "left": 640, "width": 640, "height": 640}
+    user32 = ctypes.windll.user32
+    screen_w = user32.GetSystemMetrics(0)
+    screen_h = user32.GetSystemMetrics(1)
     
-    with mss.mss() as sct:
-        print("--- REMOTE HUB: AI SYSTEM ONLINE (V3.1) ---")
+    fov = 400
+    left = int((screen_w / 2) - (fov / 2))
+    top = int((screen_h / 2) - (fov / 2))
+    monitor = {"top": top, "left": left, "width": fov, "height": fov}
+    
+    center_x = fov / 2
+    center_y = fov / 2
 
+    print("--- REMOTE HUB: AI SYSTEM ONLINE (PRO VERSION) ---")
+
+    with mss.mss() as sct:
         while True:
-            # กดคลิกขวาค้างเพื่อล็อก
             if mouse.is_pressed(button='right'):
                 img = np.array(sct.grab(monitor))
                 frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 
-                # ตรวจจับคน (classes=0)
-                results = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False)
+                results = model.predict(frame, stream=True, conf=0.4, classes=[0], verbose=False)
                 
                 for r in results:
                     boxes = r.boxes
                     if len(boxes) > 0:
+                        dist_min = float('inf')
                         best_box = None
-                        dist_min = 1000000
                         
                         for box in boxes:
                             x1, y1, x2, y2 = box.xyxy[0]
-                            cx = int((x1 + x2) / 2)
-                            cy = int(y1 + (y2 - y1) * 0.2) # เล็งช่วงหัว/อก
+                            cx = (x1 + x2) / 2
+                            cy = y1 + (y2 - y1) * 0.15
                             
-                            # คำนวณหาตัวที่ใกล้เป้าที่สุด
-                            dist = np.sqrt((cx - 320)**2 + (cy - 320)**2)
+                            dist = ((cx - center_x)**2 + (cy - center_y)**2)**0.5
                             if dist < dist_min:
                                 dist_min = dist
                                 best_box = (cx, cy)
                         
                         if best_box:
                             target_x, target_y = best_box
-                            offset_x = (target_x - 320)
-                            offset_y = (target_y - 320)
+                            offset_x = target_x - center_x
+                            offset_y = target_y - center_y
                             
-                            # ปรับความแรงการดึง (Strength) 
-                            # ถ้าอยากให้ดูดแรงสะใจ ปรับ 1.5 เป็น 2.0 หรือ 3.0 ได้เลย
-                            strength = 1.8 
+                            move_x = int(offset_x * 0.3)
+                            move_y = int(offset_y * 0.3)
                             
-                            pydirectinput.moveRel(int(offset_x * strength), int(offset_y * strength), relative=True)
+                            if abs(move_x) > 0 or abs(move_y) > 0:
+                                ctypes.windll.user32.mouse_event(0x0001, move_x, move_y, 0, 0)
 
             if keyboard.is_pressed('f4'):
-                print("--- SYSTEM SHUTDOWN ---")
                 break
 
 if __name__ == "__main__":
