@@ -9,30 +9,33 @@ import mouse
 model = YOLO('yolov8n.pt') 
 
 def start_remote_hub():
-    
+    # กำหนดขอบเขตการมองเห็นกลางจอ
     monitor = {"top": 220, "left": 640, "width": 640, "height": 640}
     
     with mss.mss() as sct:
-        print("--- REMOTE HUB: AI SYSTEM ONLINE (V3) ---")
+        print("--- REMOTE HUB: AI SYSTEM ONLINE (V3.1) ---")
 
         while True:
+            # กดคลิกขวาค้างเพื่อล็อก
             if mouse.is_pressed(button='right'):
                 img = np.array(sct.grab(monitor))
                 frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 
+                # ตรวจจับคน (classes=0)
                 results = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False)
                 
                 for r in results:
                     boxes = r.boxes
                     if len(boxes) > 0:
-                       
-                        dist_min = 1000000
                         best_box = None
+                        dist_min = 1000000
                         
                         for box in boxes:
                             x1, y1, x2, y2 = box.xyxy[0]
                             cx = int((x1 + x2) / 2)
-                            cy = int(y1 + (y2 - y1) * 0.2)
+                            cy = int(y1 + (y2 - y1) * 0.2) # เล็งช่วงหัว/อก
+                            
+                            # คำนวณหาตัวที่ใกล้เป้าที่สุด
                             dist = np.sqrt((cx - 320)**2 + (cy - 320)**2)
                             if dist < dist_min:
                                 dist_min = dist
@@ -43,12 +46,14 @@ def start_remote_hub():
                             offset_x = (target_x - 320)
                             offset_y = (target_y - 320)
                             
+                            # ปรับความแรงการดึง (Strength) 
+                            # ถ้าอยากให้ดูดแรงสะใจ ปรับ 1.5 เป็น 2.0 หรือ 3.0 ได้เลย
+                            strength = 1.8 
                             
-                            strength = 1.5
-                            if abs(offset_x) > 2 or abs(offset_y) > 2:
-                                pydirectinput.moveRel(int(offset_x * strength), int(offset_y * administrator=True), relative=True)
+                            pydirectinput.moveRel(int(offset_x * strength), int(offset_y * strength), relative=True)
 
             if keyboard.is_pressed('f4'):
+                print("--- SYSTEM SHUTDOWN ---")
                 break
 
 if __name__ == "__main__":
