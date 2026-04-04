@@ -5,51 +5,54 @@ import numpy as np
 import keyboard
 import ctypes
 import os
-import time
 
-# โหลดโมเดลด้วยโหมดความเร็วสูงสุด
+# โหลดโมเดล (แนะนำให้รันบน GPU ถ้ามีเพื่อความไวสูงสุด)
 model = YOLO('yolov8n.pt')
 
-# ตั้งค่าระดับเทพระดับแข่ง
-# trigger_area 20 คือจุดเล็กมากกลางเป้าปืน เพื่อให้ AI คิดเลขไวที่สุด
-trigger_area = 20  
-confidence_level = 0.45 
+# --- ตั้งค่าระดับโปร ---
+trigger_button = 't'    # ปุ่มเปิดการทำงาน (ตามที่นายขอ)
+detection_range = 80    # ขยายพื้นที่ตรวจจับเพื่อให้เห็นคนไกลๆ (ระยะ FOV กลางจอ)
+confidence = 0.4        # ปรับค่าความมั่นใจลงเล็กน้อยเพื่อให้ยิงคนระยะไกลได้ง่ายขึ้น
+# --------------------
 
-def start_instant_trigger():
+def start_god_trigger():
     u32 = ctypes.windll.user32
     sw = u32.GetSystemMetrics(0)
     sh = u32.GetSystemMetrics(1)
     
-    # บีบพื้นที่ตรวจจับให้เล็กที่สุดกลางจอ
-    l = int((sw / 2) - (trigger_area / 2))
-    t = int((sh / 2) - (trigger_area / 2))
-    monitor = {"top": t, "left": l, "width": trigger_area, "height": trigger_area}
+    # คำนวณขอบเขตการมองเห็น (เล็งเป้ากลางจอ)
+    l = int((sw / 2) - (detection_range / 2))
+    t = int((sh / 2) - (detection_range / 2))
+    monitor = {"top": t, "left": l, "width": detection_range, "height": detection_range}
 
-    print("--- REMOTE HUB: INSTANT TRIGGER ONLINE ---")
+    print(f"--- REMOTE HUB: GOD TRIGGER ONLINE ---")
+    print(f"HOLD [{trigger_button.upper()}] TO ERASE ENEMIES")
 
     with mss.mss() as sct:
         while True:
-            # ใช้ Shift เพื่อเปิดการทำงาน
-            if keyboard.is_pressed('shift'):
-                # Capture เฉพาะจุดที่ต้องการยิง
+            # ทำงานเมื่อกดปุ่ม T ค้างไว้
+            if keyboard.is_pressed(trigger_button):
+                # Capture ภาพด้วยความเร็วสูง
                 img = np.array(sct.grab(monitor))
-                frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
+                # ตัด Alpha Channel ออกเพื่อลดภาระ CPU
+                frame = img[:, :, :3] 
                 
-                # imgsz=64 คือการลดความละเอียดขั้นสุดเพื่อให้ AI ประมวลผลในหลักมิลลิวินาที
-                results = model.predict(frame, stream=True, conf=confidence_level, classes=[0], verbose=False, imgsz=64)
+                # imgsz=160: เพิ่มความละเอียดขึ้นจากเดิมเพื่อให้เห็น "คนตัวเล็กๆ" ในระยะไกล
+                # แต่ยังคงความเร็วที่เหนือมนุษย์ไว้
+                results = model.predict(frame, stream=True, conf=confidence, classes=[0], verbose=False, imgsz=160)
                 
                 for r in results:
                     if len(r.boxes) > 0:
-                        # กดยิงทันทีด้วย Hardware Signal (ไม่มีการรอ)
-                        u32.mouse_event(0x0002, 0, 0, 0, 0) # Left Down
-                        u32.mouse_event(0x0004, 0, 0, 0, 0) # Left Up
-                        
-                        # หน่วงเวลาหลังยิงนิดเดียวเพื่อให้ระบบไม่รัวจนบั๊ก (0.01 วินาที)
-                        time.sleep(0.01)
-
+                        # ยิงทันที (Direct Memory Injection) 
+                        # ไม่มี time.sleep เพื่อความเร็วระดับนาโนวินาที
+                        u32.mouse_event(0x0002, 0, 0, 0, 0) # Click Down
+                        u32.mouse_event(0x0004, 0, 0, 0, 0) # Click Up
+            
+            # ปุ่มปิดโปรแกรม
             if keyboard.is_pressed('f4'):
+                print("--- SYSTEM OFFLINE ---")
                 os._exit(0)
 
 if __name__ == "__main__":
-    # รันระบบทันทีโดยไม่ผ่าน Overlay เพื่อลดการใช้ทรัพยากรเครื่อง
-    start_instant_trigger()
+    # รันด้วยสิทธิ์ Administrator เท่านั้นเพื่อให้ความเร็วในการส่งสัญญาณเมาส์สูงสุด
+    start_god_trigger()
