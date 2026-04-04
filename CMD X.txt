@@ -3,79 +3,59 @@ from ultralytics import YOLO
 import mss
 import numpy as np
 import keyboard
-import mouse
 import ctypes
 import threading
 import tkinter as tk
 import os
-import random
 import time
 
-# ใช้ Nano model เพื่อความเร็ว แต่ปรับ imgsz เป็น 640 เพื่อความไกล
+# โหลด Model รุ่นที่เล็กและไวที่สุด
 model = YOLO('yolov8n.pt')
-detected_boxes = [] 
 
-def ai_process(sw, sh):
-    global detected_boxes
+# ตั้งค่าความตึง
+trigger_area = 50  # ขนาดพื้นที่รอบเป้าปืน (ยิ่งเล็กยิ่งไวและแม่น)
+confidence_level = 0.5 # ความมั่นใจ 50% ถึงจะยิง
+
+def auto_trigger(sw, sh):
     u32 = ctypes.windll.user32
     
-    # แคปภาพทั้งหน้าจอ
-    monitor = {"top": 0, "left": 0, "width": sw, "height": sh}
+    # คำนวณพื้นที่ตรวจจับ (เฉพาะกลางจอเป๊ะๆ)
+    l = int((sw / 2) - (trigger_area / 2))
+    t = int((sh / 2) - (trigger_area / 2))
+    monitor = {"top": t, "left": l, "width": trigger_area, "height": trigger_area}
     
-    # จุดกึ่งกลางหน้าจอจริง
-    screen_cx = sw / 2
-    screen_cy = sh / 2
+    # พิกัดกึ่งกลางของพื้นที่ตรวจจับ
+    cx = trigger_area / 2
+    cy = trigger_area / 2
+
+    print("--- REMOTE HUB: AUTO TRIGGER ONLINE ---")
+    print("HOLD [SHIFT] TO ACTIVATE TRIGGER")
 
     with mss.mss() as sct:
         while True:
-            # 1. Capture Full Screen
-            img = np.array(sct.grab(monitor))
-            frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
-            
-            # 2. Predict ด้วยความละเอียด 640 เพื่อให้เห็นคนไกลๆ
-            # ปรับ conf เป็น 0.4 เพื่อให้จับเป้าที่อยู่ไกลได้ง่ายขึ้น
-            results = model.predict(frame, stream=True, conf=0.4, classes=[0], verbose=False, imgsz=640)
-            
-            current_frame_boxes = []
-            best_target = None
-            min_dist = float('inf')
-
-            for r in results:
-                for box in r.boxes:
-                    # พิกัดหน้าจอจริง
-                    x1, y1, x2, y2 = box.xyxy[0].tolist()
-                    current_frame_boxes.append((x1, y1, x2, y2))
-
-                    # จุดล็อก (Head 70% / Body 30%)
-                    h_x, h_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.15
-                    b_x, b_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.5
-                    
-                    # คำนวณหาตัวที่ใกล้เป้าปืน (กลางจอ) ที่สุด
-                    dist = ((h_x - screen_cx)**2 + (h_y - screen_cy)**2)**0.5
-                    if dist < min_dist:
-                        min_dist = dist
-                        target_type = random.choices(['head', 'body'], weights=[70, 30])[0]
-                        best_target = (h_x, h_y) if target_type == 'head' else (b_x, b_y)
-
-            detected_boxes = current_frame_boxes
-
-            # 3. ระบบล็อกเป้า (คลิกขวาค้าง)
-            if mouse.is_pressed(button='right') and best_target:
-                tx, ty = best_target
-                # คำนวณระยะที่ต้องขยับเมาส์
-                mx = int((tx - screen_cx) * 0.5)
-                my = int((ty - screen_cy) * 0.5)
+            # ทำงานเฉพาะตอนกดปุ่ม Shift ค้างไว้ (หรือเปลี่ยนเป็นปุ่มอื่นที่ถนัด)
+            if keyboard.is_pressed('shift'):
+                img = np.array(sct.grab(monitor))
+                frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
                 
-                if abs(mx) > 1 or abs(my) > 1:
-                    u32.mouse_event(0x0001, mx, my, 0, 0)
+                # ใช้ imgsz ขนาดเล็กมาก (128) เพื่อรีดความเร็วสูงสุด
+                results = model.predict(frame, stream=True, conf=confidence_level, classes=[0], verbose=False, imgsz=128)
+                
+                for r in results:
+                    if len(r.boxes) > 0:
+                        # ถ้ามีคนหลุดเข้ามาในกรอบกลางจอ
+                        # สั่งคลิกซ้ายทันที (MOUSEEVENTF_LEFTDOWN + LEFTUP)
+                        u32.mouse_event(0x0002, 0, 0, 0, 0) # กดลง
+                        time.sleep(0.01)                   # หน่วงนิดเดียวเพื่อให้เกมรับทัน
+                        u32.mouse_event(0x0004, 0, 0, 0, 0) # ปล่อย
+                        
+                        # ป้องกันการรัวเกินไปจนเกมค้าง (ปรับเลขนี้ได้)
+                        time.sleep(0.05) 
 
             if keyboard.is_pressed('f4'):
                 os._exit(0)
-            
-            # ลดหน่วงเล็กน้อยเพื่อให้ CPU ไม่ทำงานหนักเกินไป
-            time.sleep(0.001)
 
-def run_visual_overlay():
+def draw_fov():
     u32 = ctypes.windll.user32
     sw = u32.GetSystemMetrics(0)
     sh = u32.GetSystemMetrics(1)
@@ -90,23 +70,15 @@ def run_visual_overlay():
     canvas = tk.Canvas(root, width=sw, height=sh, bg="black", highlightthickness=0)
     canvas.pack()
 
-    def refresh():
-        canvas.delete("all")
-        
-        # วาดกรอบสีแดงครอบทุกคนที่เห็นบนจอ
-        for (x1, y1, x2, y2) in detected_boxes:
-            canvas.create_rectangle(x1, y1, x2, y2, outline="#FF0000", width=2)
-            
-            # วาดจุดเล็งสีเหลืองเล็กๆ
-            head_x = (x1 + x2) / 2
-            head_y = y1 + (y2 - y1) * 0.15
-            canvas.create_oval(head_x-2, head_y-2, head_x+2, head_y+2, fill="yellow", outline="yellow")
+    # วาดจุดเล็งขนาดเล็กกลางจอเพื่อให้รู้ระยะยิง
+    l_edge = (sw / 2) - (trigger_area / 2)
+    t_edge = (sh / 2) - (trigger_area / 2)
+    
+    # กรอบสีเหลืองคือระยะที่ AI จะกดยิงให้
+    canvas.create_rectangle(l_edge, t_edge, l_edge + trigger_area, t_edge + trigger_area, outline="yellow", width=1)
 
-        root.after(10, refresh)
-
-    threading.Thread(target=ai_process, args=(sw, sh), daemon=True).start()
-    refresh()
+    threading.Thread(target=auto_trigger, args=(sw, sh), daemon=True).start()
     root.mainloop()
 
 if __name__ == "__main__":
-    run_visual_overlay()
+    draw_fov()
