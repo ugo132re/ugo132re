@@ -6,47 +6,49 @@ import pydirectinput
 import keyboard
 import mouse
 
-# โหลดสมอง AI (รูปร่างคน)
 model = YOLO('yolov8n.pt') 
 
 def start_remote_hub():
-    # ขยายขอบเขตการมองเห็น (FOV) ให้กว้างขึ้น และเพิ่มความไว
-    monitor = {"top": 300, "left": 710, "width": 500, "height": 500}
+    
+    monitor = {"top": 220, "left": 640, "width": 640, "height": 640}
     
     with mss.mss() as sct:
-        print("--- REMOTE HUB: AI SYSTEM ONLINE (ULTRA SPEED) ---")
+        print("--- REMOTE HUB: AI SYSTEM ONLINE (V3) ---")
 
         while True:
-            # ใช้ปุ่มคลิกขวาค้างเพื่อดูด
             if mouse.is_pressed(button='right'):
                 img = np.array(sct.grab(monitor))
                 frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 
-                # ปรับค่าความแม่นยำ (conf) เป็น 0.4 เพื่อให้ดูดง่ายขึ้น
-                results = model.predict(frame, stream=True, conf=0.4, classes=[0], verbose=False)
+                results = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False)
                 
                 for r in results:
                     boxes = r.boxes
                     if len(boxes) > 0:
-                        # เลือกเป้าหมายที่อยู่ใกล้จุดศูนย์กลางเป้าที่สุด
-                        box = boxes[0]
-                        x1, y1, x2, y2 = box.xyxy[0]
+                       
+                        dist_min = 1000000
+                        best_box = None
                         
-                        # คำนวณจุดกึ่งกลาง (ตัว)
-                        center_x = int((x1 + x2) / 2)
-                        # ปรับจุดเล็ง: y1 คือหัว, y2 คือเท้า (ปรับ 0.15 เพื่อให้เล็งแถวๆ หน้าอก/หัว)
-                        center_y = int(y1 + (y2 - y1) * 0.15) 
+                        for box in boxes:
+                            x1, y1, x2, y2 = box.xyxy[0]
+                            cx = int((x1 + x2) / 2)
+                            cy = int(y1 + (y2 - y1) * 0.2)
+                            dist = np.sqrt((cx - 320)**2 + (cy - 320)**2)
+                            if dist < dist_min:
+                                dist_min = dist
+                                best_box = (cx, cy)
                         
-                        # คำนวณระยะห่างจากเป้า (จุดกึ่งกลางของกรอบ 500x500 คือ 250)
-                        offset_x = (center_x - 250)
-                        offset_y = (center_y - 250)
-                        
-                        # เพิ่มตัวคูณความแรง (Strength) ปรับตัวเลขนี้ให้ดูดแรงขึ้นได้ (เช่น 1.5 หรือ 2.0)
-                        strength = 1.2
-                        pydirectinput.moveRel(int(offset_x * strength), int(offset_y * strength), relative=True)
+                        if best_box:
+                            target_x, target_y = best_box
+                            offset_x = (target_x - 320)
+                            offset_y = (target_y - 320)
+                            
+                            
+                            strength = 1.5
+                            if abs(offset_x) > 2 or abs(offset_y) > 2:
+                                pydirectinput.moveRel(int(offset_x * strength), int(offset_y * administrator=True), relative=True)
 
             if keyboard.is_pressed('f4'):
-                print("--- REMOTE HUB: SYSTEM SHUTDOWN ---")
                 break
 
 if __name__ == "__main__":
