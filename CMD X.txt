@@ -11,62 +11,73 @@ import os
 import random
 import time
 
+# Load Model
 model = YOLO('yolov8n.pt')
-fov_size = 320
-target_data = [] 
+fov_size = 350 # ปรับขนาดกรอบการมองเห็น
+detected_boxes = [] # เก็บข้อมูลพิกัดเพื่อไปวาดหน้าจอ
 
-def ai_loop(sw, sh):
-    global target_data
+def ai_process(sw, sh):
+    global detected_boxes
     u32 = ctypes.windll.user32
-    l = int((sw / 2) - (fov_size / 2))
-    t = int((sh / 2) - (fov_size / 2))
-    mon = {"top": t, "left": l, "width": fov_size, "height": fov_size}
+    
+    # คำนวณตำแหน่ง FOV กลางจอ
+    l_fov = int((sw / 2) - (fov_size / 2))
+    t_fov = int((sh / 2) - (fov_size / 2))
+    monitor = {"top": t_fov, "left": l_fov, "width": fov_size, "height": fov_size}
+    
     cx_fov = fov_size / 2
     cy_fov = fov_size / 2
 
     with mss.mss() as sct:
         while True:
-            img = np.array(sct.grab(mon))
+            # Capture
+            img = np.array(sct.grab(monitor))
             frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
-            res = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False, imgsz=224)
             
-            temp_targets = []
+            # AI Predict (imgsz 224 เพื่อความไวสูงสุด)
+            results = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False, imgsz=224)
+            
+            current_frame_boxes = []
             best_target = None
             min_dist = float('inf')
 
-            for r in res:
+            for r in results:
                 for box in r.boxes:
+                    # พิกัดภายใน FOV (0 ถึง fov_size)
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
                     
-                    # Calculate Head (Circle) and Body (Square)
-                    head_x = (x1 + x2) / 2
-                    head_y = y1 + (y2 - y1) * 0.15
-                    body_x = (x1 + x2) / 2
-                    body_y = y1 + (y2 - y1) * 0.5
-                    
-                    temp_targets.append({'h': (head_x, head_y), 'b': (body_x, body_y)})
+                    # เก็บค่าไปวาด ESP (สี่เหลี่ยมล้อมรอบตัว)
+                    current_frame_boxes.append((x1, y1, x2, y2))
 
-                    dist = ((head_x - cx_fov)**2 + (head_y - cy_fov)**2)**0.5
+                    # คำนวณจุดล็อก (หัว/ตัว)
+                    h_x, h_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.15
+                    b_x, b_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.5
+                    
+                    dist = ((h_x - cx_fov)**2 + (h_y - cy_fov)**2)**0.5
                     if dist < min_dist:
                         min_dist = dist
-                        # 70% Head, 30% Body
-                        choice = random.choices(['h', 'b'], weights=[70, 30])[0]
-                        best_target = (head_x, head_y) if choice == 'h' else (body_x, body_y)
+                        # สุ่มจุดล็อก 70/30
+                        target_type = random.choices(['head', 'body'], weights=[70, 30])[0]
+                        best_target = (h_x, h_y) if target_type == 'head' else (b_x, b_y)
 
-            target_data = temp_targets
+            detected_boxes = current_frame_boxes # ส่งค่าไปให้ Thread วาดหน้าจอ
 
+            # ระบบล็อกเป้า (คลิกขวาค้าง)
             if mouse.is_pressed(button='right') and best_target:
                 tx, ty = best_target
-                dx = int((tx - cx_fov) * 0.5)
-                dy = int((ty - cy_fov) * 0.5)
-                if abs(dx) > 1 or abs(dy) > 1:
-                    u32.mouse_event(0x0001, dx, dy, 0, 0)
+                # คำนวณแรงดึง (0.45 = ความสมูท)
+                mx = int((tx - cx_fov) * 0.45)
+                my = int((ty - cy_fov) * 0.45)
+                
+                if abs(mx) > 1 or abs(my) > 1:
+                    u32.mouse_event(0x0001, mx, my, 0, 0)
 
             if keyboard.is_pressed('f4'):
                 os._exit(0)
-            time.sleep(0.005)
+            
+            time.sleep(0.001)
 
-def draw_overlay():
+def run_visual_overlay():
     u32 = ctypes.windll.user32
     sw = u32.GetSystemMetrics(0)
     sh = u32.GetSystemMetrics(1)
@@ -80,36 +91,40 @@ def draw_overlay():
     
     canvas = tk.Canvas(root, width=sw, height=sh, bg="black", highlightthickness=0)
     canvas.pack()
-    
-    l = (sw / 2) - (fov_size / 2)
-    t = (sh / 2) - (fov_size / 2)
-    r = (sw / 2) + (fov_size / 2)
-    b = (sh / 2) + (fov_size / 2)
 
-    def update_canvas():
+    # จุดเริ่มของ FOV บนหน้าจอจริง
+    offset_x = (sw / 2) - (fov_size / 2)
+    offset_y = (sh / 2) - (fov_size / 2)
+
+    def refresh():
         canvas.delete("all")
-        # Draw FOV Box
-        canvas.create_rectangle(l, t, r, b, outline="green", width=1)
         
-        # Draw Indicators on detected people
-        for target in target_data:
-            hx, hy = target['h']
-            bx, by = target['b']
-            
-            # Convert FOV local to Screen Global
-            shx, shy = hx + l, hy + t
-            sbx, sby = bx + l, by + t
-            
-            # Draw Circle (Head)
-            canvas.create_oval(shx-5, shy-5, shx+5, shy+5, outline="red", width=2)
-            # Draw Square (Body)
-            canvas.create_rectangle(sbx-8, sby-8, sbx+8, sby+8, outline="blue", width=2)
-            
-        root.after(10, update_canvas)
+        # 1. วาดเส้นขอบ FOV (สีเขียวอ่อน)
+        canvas.create_rectangle(offset_x, offset_y, offset_x + fov_size, offset_y + fov_size, outline="#00FF00", width=1)
 
-    threading.Thread(target=ai_loop, args=(sw, sh), daemon=True).start()
-    update_canvas()
+        # 2. วาดกรอบสี่เหลี่ยมครอบคน (Real-time Box)
+        for (x1, y1, x2, y2) in detected_boxes:
+            # แปลงพิกัดจากใน FOV มาเป็นพิกัดหน้าจอจริง
+            screen_x1 = x1 + offset_x
+            screen_y1 = y1 + offset_y
+            screen_x2 = x2 + offset_x
+            screen_y2 = y2 + offset_y
+            
+            # วาดกรอบสี่เหลี่ยมสีแดง (ESP Box)
+            canvas.create_rectangle(screen_x1, screen_y1, screen_x2, screen_y2, outline="#FF0000", width=2)
+            
+            # แถม: วาดจุดวงกลมเล็กๆ ไว้ที่หัวเพื่อเช็คจุดล็อก
+            head_center_x = (screen_x1 + screen_x2) / 2
+            head_center_y = screen_y1 + (screen_y2 - screen_y1) * 0.15
+            canvas.create_oval(head_center_x-3, head_center_y-3, head_center_x+3, head_center_y+3, fill="yellow", outline="yellow")
+
+        root.after(10, refresh)
+
+    # เริ่มทำงาน AI ใน Thread แยก
+    threading.Thread(target=ai_process, args=(sw, sh), daemon=True).start()
+    
+    refresh()
     root.mainloop()
 
 if __name__ == "__main__":
-    draw_overlay()
+    run_visual_overlay()
