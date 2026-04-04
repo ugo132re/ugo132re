@@ -11,31 +11,30 @@ import os
 import random
 import time
 
-# Load Model
+# ใช้ Nano model เพื่อความเร็ว แต่ปรับ imgsz เป็น 640 เพื่อความไกล
 model = YOLO('yolov8n.pt')
-fov_size = 350 # ปรับขนาดกรอบการมองเห็น
-detected_boxes = [] # เก็บข้อมูลพิกัดเพื่อไปวาดหน้าจอ
+detected_boxes = [] 
 
 def ai_process(sw, sh):
     global detected_boxes
     u32 = ctypes.windll.user32
     
-    # คำนวณตำแหน่ง FOV กลางจอ
-    l_fov = int((sw / 2) - (fov_size / 2))
-    t_fov = int((sh / 2) - (fov_size / 2))
-    monitor = {"top": t_fov, "left": l_fov, "width": fov_size, "height": fov_size}
+    # แคปภาพทั้งหน้าจอ
+    monitor = {"top": 0, "left": 0, "width": sw, "height": sh}
     
-    cx_fov = fov_size / 2
-    cy_fov = fov_size / 2
+    # จุดกึ่งกลางหน้าจอจริง
+    screen_cx = sw / 2
+    screen_cy = sh / 2
 
     with mss.mss() as sct:
         while True:
-            # Capture
+            # 1. Capture Full Screen
             img = np.array(sct.grab(monitor))
             frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
             
-            # AI Predict (imgsz 224 เพื่อความไวสูงสุด)
-            results = model.predict(frame, stream=True, conf=0.5, classes=[0], verbose=False, imgsz=224)
+            # 2. Predict ด้วยความละเอียด 640 เพื่อให้เห็นคนไกลๆ
+            # ปรับ conf เป็น 0.4 เพื่อให้จับเป้าที่อยู่ไกลได้ง่ายขึ้น
+            results = model.predict(frame, stream=True, conf=0.4, classes=[0], verbose=False, imgsz=640)
             
             current_frame_boxes = []
             best_target = None
@@ -43,31 +42,29 @@ def ai_process(sw, sh):
 
             for r in results:
                 for box in r.boxes:
-                    # พิกัดภายใน FOV (0 ถึง fov_size)
+                    # พิกัดหน้าจอจริง
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
-                    
-                    # เก็บค่าไปวาด ESP (สี่เหลี่ยมล้อมรอบตัว)
                     current_frame_boxes.append((x1, y1, x2, y2))
 
-                    # คำนวณจุดล็อก (หัว/ตัว)
+                    # จุดล็อก (Head 70% / Body 30%)
                     h_x, h_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.15
                     b_x, b_y = (x1 + x2) / 2, y1 + (y2 - y1) * 0.5
                     
-                    dist = ((h_x - cx_fov)**2 + (h_y - cy_fov)**2)**0.5
+                    # คำนวณหาตัวที่ใกล้เป้าปืน (กลางจอ) ที่สุด
+                    dist = ((h_x - screen_cx)**2 + (h_y - screen_cy)**2)**0.5
                     if dist < min_dist:
                         min_dist = dist
-                        # สุ่มจุดล็อก 70/30
                         target_type = random.choices(['head', 'body'], weights=[70, 30])[0]
                         best_target = (h_x, h_y) if target_type == 'head' else (b_x, b_y)
 
-            detected_boxes = current_frame_boxes # ส่งค่าไปให้ Thread วาดหน้าจอ
+            detected_boxes = current_frame_boxes
 
-            # ระบบล็อกเป้า (คลิกขวาค้าง)
+            # 3. ระบบล็อกเป้า (คลิกขวาค้าง)
             if mouse.is_pressed(button='right') and best_target:
                 tx, ty = best_target
-                # คำนวณแรงดึง (0.45 = ความสมูท)
-                mx = int((tx - cx_fov) * 0.45)
-                my = int((ty - cy_fov) * 0.45)
+                # คำนวณระยะที่ต้องขยับเมาส์
+                mx = int((tx - screen_cx) * 0.5)
+                my = int((ty - screen_cy) * 0.5)
                 
                 if abs(mx) > 1 or abs(my) > 1:
                     u32.mouse_event(0x0001, mx, my, 0, 0)
@@ -75,6 +72,7 @@ def ai_process(sw, sh):
             if keyboard.is_pressed('f4'):
                 os._exit(0)
             
+            # ลดหน่วงเล็กน้อยเพื่อให้ CPU ไม่ทำงานหนักเกินไป
             time.sleep(0.001)
 
 def run_visual_overlay():
@@ -92,37 +90,21 @@ def run_visual_overlay():
     canvas = tk.Canvas(root, width=sw, height=sh, bg="black", highlightthickness=0)
     canvas.pack()
 
-    # จุดเริ่มของ FOV บนหน้าจอจริง
-    offset_x = (sw / 2) - (fov_size / 2)
-    offset_y = (sh / 2) - (fov_size / 2)
-
     def refresh():
         canvas.delete("all")
         
-        # 1. วาดเส้นขอบ FOV (สีเขียวอ่อน)
-        canvas.create_rectangle(offset_x, offset_y, offset_x + fov_size, offset_y + fov_size, outline="#00FF00", width=1)
-
-        # 2. วาดกรอบสี่เหลี่ยมครอบคน (Real-time Box)
+        # วาดกรอบสีแดงครอบทุกคนที่เห็นบนจอ
         for (x1, y1, x2, y2) in detected_boxes:
-            # แปลงพิกัดจากใน FOV มาเป็นพิกัดหน้าจอจริง
-            screen_x1 = x1 + offset_x
-            screen_y1 = y1 + offset_y
-            screen_x2 = x2 + offset_x
-            screen_y2 = y2 + offset_y
+            canvas.create_rectangle(x1, y1, x2, y2, outline="#FF0000", width=2)
             
-            # วาดกรอบสี่เหลี่ยมสีแดง (ESP Box)
-            canvas.create_rectangle(screen_x1, screen_y1, screen_x2, screen_y2, outline="#FF0000", width=2)
-            
-            # แถม: วาดจุดวงกลมเล็กๆ ไว้ที่หัวเพื่อเช็คจุดล็อก
-            head_center_x = (screen_x1 + screen_x2) / 2
-            head_center_y = screen_y1 + (screen_y2 - screen_y1) * 0.15
-            canvas.create_oval(head_center_x-3, head_center_y-3, head_center_x+3, head_center_y+3, fill="yellow", outline="yellow")
+            # วาดจุดเล็งสีเหลืองเล็กๆ
+            head_x = (x1 + x2) / 2
+            head_y = y1 + (y2 - y1) * 0.15
+            canvas.create_oval(head_x-2, head_y-2, head_x+2, head_y+2, fill="yellow", outline="yellow")
 
         root.after(10, refresh)
 
-    # เริ่มทำงาน AI ใน Thread แยก
     threading.Thread(target=ai_process, args=(sw, sh), daemon=True).start()
-    
     refresh()
     root.mainloop()
 
