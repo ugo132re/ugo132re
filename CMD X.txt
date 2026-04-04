@@ -4,81 +4,52 @@ import mss
 import numpy as np
 import keyboard
 import ctypes
-import threading
-import tkinter as tk
 import os
 import time
 
-# โหลด Model รุ่นที่เล็กและไวที่สุด
+# โหลดโมเดลด้วยโหมดความเร็วสูงสุด
 model = YOLO('yolov8n.pt')
 
-# ตั้งค่าความตึง
-trigger_area = 50  # ขนาดพื้นที่รอบเป้าปืน (ยิ่งเล็กยิ่งไวและแม่น)
-confidence_level = 0.5 # ความมั่นใจ 50% ถึงจะยิง
+# ตั้งค่าระดับเทพระดับแข่ง
+# trigger_area 20 คือจุดเล็กมากกลางเป้าปืน เพื่อให้ AI คิดเลขไวที่สุด
+trigger_area = 20  
+confidence_level = 0.45 
 
-def auto_trigger(sw, sh):
-    u32 = ctypes.windll.user32
-    
-    # คำนวณพื้นที่ตรวจจับ (เฉพาะกลางจอเป๊ะๆ)
-    l = int((sw / 2) - (trigger_area / 2))
-    t = int((sh / 2) - (trigger_area / 2))
-    monitor = {"top": t, "left": l, "width": trigger_area, "height": trigger_area}
-    
-    # พิกัดกึ่งกลางของพื้นที่ตรวจจับ
-    cx = trigger_area / 2
-    cy = trigger_area / 2
-
-    print("--- REMOTE HUB: AUTO TRIGGER ONLINE ---")
-    print("HOLD [SHIFT] TO ACTIVATE TRIGGER")
-
-    with mss.mss() as sct:
-        while True:
-            # ทำงานเฉพาะตอนกดปุ่ม Shift ค้างไว้ (หรือเปลี่ยนเป็นปุ่มอื่นที่ถนัด)
-            if keyboard.is_pressed('shift'):
-                img = np.array(sct.grab(monitor))
-                frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
-                
-                # ใช้ imgsz ขนาดเล็กมาก (128) เพื่อรีดความเร็วสูงสุด
-                results = model.predict(frame, stream=True, conf=confidence_level, classes=[0], verbose=False, imgsz=128)
-                
-                for r in results:
-                    if len(r.boxes) > 0:
-                        # ถ้ามีคนหลุดเข้ามาในกรอบกลางจอ
-                        # สั่งคลิกซ้ายทันที (MOUSEEVENTF_LEFTDOWN + LEFTUP)
-                        u32.mouse_event(0x0002, 0, 0, 0, 0) # กดลง
-                        time.sleep(0.01)                   # หน่วงนิดเดียวเพื่อให้เกมรับทัน
-                        u32.mouse_event(0x0004, 0, 0, 0, 0) # ปล่อย
-                        
-                        # ป้องกันการรัวเกินไปจนเกมค้าง (ปรับเลขนี้ได้)
-                        time.sleep(0.05) 
-
-            if keyboard.is_pressed('f4'):
-                os._exit(0)
-
-def draw_fov():
+def start_instant_trigger():
     u32 = ctypes.windll.user32
     sw = u32.GetSystemMetrics(0)
     sh = u32.GetSystemMetrics(1)
     
-    root = tk.Tk()
-    root.overrideredirect(True)
-    root.geometry(f"{sw}x{sh}+0+0")
-    root.attributes("-topmost", True)
-    root.attributes("-transparentcolor", "black")
-    root.config(bg="black")
-    
-    canvas = tk.Canvas(root, width=sw, height=sh, bg="black", highlightthickness=0)
-    canvas.pack()
+    # บีบพื้นที่ตรวจจับให้เล็กที่สุดกลางจอ
+    l = int((sw / 2) - (trigger_area / 2))
+    t = int((sh / 2) - (trigger_area / 2))
+    monitor = {"top": t, "left": l, "width": trigger_area, "height": trigger_area}
 
-    # วาดจุดเล็งขนาดเล็กกลางจอเพื่อให้รู้ระยะยิง
-    l_edge = (sw / 2) - (trigger_area / 2)
-    t_edge = (sh / 2) - (trigger_area / 2)
-    
-    # กรอบสีเหลืองคือระยะที่ AI จะกดยิงให้
-    canvas.create_rectangle(l_edge, t_edge, l_edge + trigger_area, t_edge + trigger_area, outline="yellow", width=1)
+    print("--- REMOTE HUB: INSTANT TRIGGER ONLINE ---")
 
-    threading.Thread(target=auto_trigger, args=(sw, sh), daemon=True).start()
-    root.mainloop()
+    with mss.mss() as sct:
+        while True:
+            # ใช้ Shift เพื่อเปิดการทำงาน
+            if keyboard.is_pressed('shift'):
+                # Capture เฉพาะจุดที่ต้องการยิง
+                img = np.array(sct.grab(monitor))
+                frame = cv2.cvtColor(img[:, :, :3], cv2.COLOR_RGB2BGR)
+                
+                # imgsz=64 คือการลดความละเอียดขั้นสุดเพื่อให้ AI ประมวลผลในหลักมิลลิวินาที
+                results = model.predict(frame, stream=True, conf=confidence_level, classes=[0], verbose=False, imgsz=64)
+                
+                for r in results:
+                    if len(r.boxes) > 0:
+                        # กดยิงทันทีด้วย Hardware Signal (ไม่มีการรอ)
+                        u32.mouse_event(0x0002, 0, 0, 0, 0) # Left Down
+                        u32.mouse_event(0x0004, 0, 0, 0, 0) # Left Up
+                        
+                        # หน่วงเวลาหลังยิงนิดเดียวเพื่อให้ระบบไม่รัวจนบั๊ก (0.01 วินาที)
+                        time.sleep(0.01)
+
+            if keyboard.is_pressed('f4'):
+                os._exit(0)
 
 if __name__ == "__main__":
-    draw_fov()
+    # รันระบบทันทีโดยไม่ผ่าน Overlay เพื่อลดการใช้ทรัพยากรเครื่อง
+    start_instant_trigger()
