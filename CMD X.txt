@@ -5,31 +5,29 @@ import numpy as np
 import keyboard
 import mouse
 import ctypes
+import threading
+import tkinter as tk
+import os
 
 model = YOLO('yolov8n.pt')
+fov_size = 400
 
-def start_remote_hub():
+def ai_loop(screen_w, screen_h):
     user32 = ctypes.windll.user32
-    screen_w = user32.GetSystemMetrics(0)
-    screen_h = user32.GetSystemMetrics(1)
-    
-    fov = 400
-    left = int((screen_w / 2) - (fov / 2))
-    top = int((screen_h / 2) - (fov / 2))
-    monitor = {"top": top, "left": left, "width": fov, "height": fov}
-    
-    center_x = fov / 2
-    center_y = fov / 2
+    left = int((screen_w / 2) - (fov_size / 2))
+    top = int((screen_h / 2) - (fov_size / 2))
+    monitor = {"top": top, "left": left, "width": fov_size, "height": fov_size}
+    center_x = fov_size / 2
+    center_y = fov_size / 2
 
-    print("--- REMOTE HUB: AI SYSTEM ONLINE (PRO VERSION) ---")
+    print("--- REMOTE HUB: PRO SYSTEM + FOV ONLINE ---")
 
     with mss.mss() as sct:
         while True:
             if mouse.is_pressed(button='right'):
                 img = np.array(sct.grab(monitor))
                 frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-                
-                results = model.predict(frame, stream=True, conf=0.4, classes=[0], verbose=False)
+                results = model.predict(frame, stream=True, conf=0.45, classes=[0], verbose=False)
                 
                 for r in results:
                     boxes = r.boxes
@@ -52,14 +50,43 @@ def start_remote_hub():
                             offset_x = target_x - center_x
                             offset_y = target_y - center_y
                             
-                            move_x = int(offset_x * 0.3)
-                            move_y = int(offset_y * 0.3)
+                            move_x = int(offset_x * 0.45)
+                            move_y = int(offset_y * 0.45)
                             
-                            if abs(move_x) > 0 or abs(move_y) > 0:
+                            if abs(move_x) > 1 or abs(move_y) > 1:
                                 ctypes.windll.user32.mouse_event(0x0001, move_x, move_y, 0, 0)
 
             if keyboard.is_pressed('f4'):
-                break
+                print("--- REMOTE HUB SHUTDOWN ---")
+                os._exit(0)
+
+def start_overlay():
+    user32 = ctypes.windll.user32
+    screen_w = user32.GetSystemMetrics(0)
+    screen_h = user32.GetSystemMetrics(1)
+    
+    root = tk.Tk()
+    root.title("REMOTE HUB FOV")
+    root.overrideredirect(True)
+    root.geometry(f"{screen_w}x{screen_h}+0+0")
+    root.attributes("-topmost", True)
+    root.attributes("-transparentcolor", "black")
+    root.config(bg="black")
+    
+    canvas = tk.Canvas(root, width=screen_w, height=screen_h, bg="black", highlightthickness=0)
+    canvas.pack()
+    
+    left = (screen_w / 2) - (fov_size / 2)
+    top = (screen_h / 2) - (fov_size / 2)
+    right = (screen_w / 2) + (fov_size / 2)
+    bottom = (screen_h / 2) + (fov_size / 2)
+    
+    canvas.create_rectangle(left, top, right, bottom, outline="red", width=2)
+    
+    ai_thread = threading.Thread(target=ai_loop, args=(screen_w, screen_h), daemon=True)
+    ai_thread.start()
+    
+    root.mainloop()
 
 if __name__ == "__main__":
-    start_remote_hub()
+    start_overlay()
