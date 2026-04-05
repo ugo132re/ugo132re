@@ -1,62 +1,97 @@
 import cv2
-from ultralytics import YOLO
-import mss
+import mediapipe as mp
 import numpy as np
-import keyboard
-import ctypes
-import os
+import math
 import time
 
-# โหลด Model (แนะนำให้แปลงเป็น ONNX เพื่อความไวสูงสุด)
-model = YOLO('yolov8n.pt') 
+# ===== ตั้งค่า mediapipe =====
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(max_num_hands=1)
+mp_draw = mp.solutions.drawing_utils
 
-# --- TURBO CONFIG ---
-trigger_area = 100    # ขยายพื้นที่เพื่อให้เห็นศัตรูจากระยะไกลขึ้น
-conf_threshold = 0.45 # ความมั่นใจ (ปรับลดได้ถ้าอยากให้ยิงไวขึ้น)
-active = False        # สถานะเริ่มต้น (ปิดอยู่)
-# --------------------
+cap = cv2.VideoCapture(0)
 
-def turbo_trigger():
-    global active
-    u32 = ctypes.windll.user32
-    sw, sh = u32.GetSystemMetrics(0), u32.GetSystemMetrics(1)
-    
-    # บีบพื้นที่ตรวจจับกลางจอ
-    l = int((sw / 2) - (trigger_area / 2))
-    t = int((sh / 2) - (trigger_area / 2))
-    monitor = {"top": t, "left": l, "width": trigger_area, "height": trigger_area}
+# ===== เช็คแบมือ =====
+def is_open_palm(handLms):
+    tips = [4, 8, 12, 16, 20]
+    fingers = []
 
-    print("--- REMOTE HUB: TURBO TRIGGER SYSTEM ---")
-    print("[F1] TO START/STOP | [F4] TO EXIT")
+    # นิ้วโป้ง
+    if handLms.landmark[4].x < handLms.landmark[3].x:
+        fingers.append(1)
+    else:
+        fingers.append(0)
 
-    with mss.mss() as sct:
-        while True:
-            # ปุ่ม Toggle เปิด-ปิดระบบ
-            if keyboard.is_pressed('f1'):
-                active = not active
-                status = "STARTED" if active else "STOPPED"
-                print(f"SYSTEM: {status}")
-                time.sleep(0.3)
+    # นิ้วอื่น
+    for tip in tips[1:]:
+        if handLms.landmark[tip].y < handLms.landmark[tip - 2].y:
+            fingers.append(1)
+        else:
+            fingers.append(0)
 
-            if active:
-                # 1. แคปภาพแบบ RAW (ไวที่สุด)
-                img = sct.grab(monitor)
-                frame = np.frombuffer(img.bgra, dtype=np.uint8).reshape(trigger_area, trigger_area, 4)
-                frame = frame[:, :, :3] # ตัด Alpha channel ออกแบบไว
+    return all(fingers)
 
-                # 2. ประมวลผลด้วย imgsz ขนาดเล็ก (128) เพื่อรีดเฟรมเรต
-                # stream=True จะช่วยให้ AI ไม่ต้องรอสร้าง List ผลลัพธ์ทั้งหมด
-                results = model.predict(frame, stream=True, conf=conf_threshold, classes=[0], verbose=False, imgsz=128)
-                
-                for r in results:
-                    if len(r.boxes) > 0:
-                        # 3. ยิงทันทีแบบ Hardware Level (ไม่มีการรอ)
-                        u32.mouse_event(0x0002, 0, 0, 0, 0) # Left Down
-                        u32.mouse_event(0x0004, 0, 0, 0, 0) # Left Up
-            
-            if keyboard.is_pressed('f4'):
-                os._exit(0)
+# ===== เอฟเฟกต์พลังเวท =====
+def draw_magic(frame, cx, cy, t):
+    overlay = frame.copy()
 
-if __name__ == "__main__":
-    # ต้องรันแบบ Administrator เท่านั้น
-    turbo_trigger()
+    # 🔵 วงพลังเรืองแสง
+    for i in range(6):
+        radius = 40 + i * 15
+        alpha = 0.15
+        cv2.circle(overlay, (cx, cy), radius, (255, 150, 0), -1)
+        frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
+
+    # ⚪ แกนกลาง
+    cv2.circle(frame, (cx, cy), 25, (255, 255, 255), -1)
+
+    # 🌀 วงเวทย์หมุน
+    for i in range(8):
+        angle = t + i * (2 * math.pi / 8)
+        x = int(cx + 80 * math.cos(angle))
+        y = int(cy + 80 * math.sin(angle))
+        cv2.circle(frame, (x, y), 8, (255, 200, 0), -1)
+
+    # ✨ เส้นพลัง
+    for i in range(5):
+        angle = t + i
+        x = int(cx + 120 * math.cos(angle))
+        y = int(cy + 120 * math.sin(angle))
+        cv2.line(frame, (cx, cy), (x, y), (255, 255, 0), 2)
+
+    return frame
+
+# ===== LOOP =====
+start_time = time.time()
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = cv2.flip(frame, 1)
+    imgRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    results = hands.process(imgRGB)
+
+    t = time.time() - start_time
+
+    if results.multi_hand_landmarks:
+        for handLms in results.multi_hand_landmarks:
+            mp_draw.draw_landmarks(frame, handLms, mp_hands.HAND_CONNECTIONS)
+
+            h, w, _ = frame.shape
+            lm = handLms.landmark[9]  # กลางฝ่ามือ
+            cx, cy = int(lm.x * w), int(lm.y * h)
+
+            # 🔥 ถ้าแบมือ → เปิดพลัง
+            if is_open_palm(handLms):
+                frame = draw_magic(frame, cx, cy, t)
+
+    cv2.imshow("Magic Power Mode", frame)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
