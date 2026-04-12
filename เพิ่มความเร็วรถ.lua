@@ -1,24 +1,34 @@
--- [[ REMOTE HUB: Vehicle Speed Boost (On-Press Only) ]] --
+-- [[ REMOTE HUB: Vehicle Manual Boost (W/S Keys) ]] --
 
-local boostPower = 1.5 -- ปรับความแรงได้ตามชอบ
+local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local LocalPlayer = game.Players.LocalPlayer
+local player = game.Players.LocalPlayer
 
-local connection
-connection = RunService.Stepped:Connect(function()
-    local char = LocalPlayer.Character
+-- ตั้งค่าความแรง
+local boostSpeed = 2 -- เพิ่มความเร็ว (ยิ่งเยอะยิ่งแรง)
+
+RunService.Heartbeat:Connect(function()
+    local char = player.Character
     local humanoid = char and char:FindFirstChild("Humanoid")
     
     if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
         local seat = humanoid.SeatPart
         
-        -- เช็คว่ามีการกดปุ่มเดินหน้า (W) หรือถอยหลัง (S)
-        -- Throttle > 0 คือเดินหน้า, < 0 คือถอยหลัง
-        if seat.Throttle ~= 0 then
-            -- เพิ่มความเร็วตามทิศทางที่รถหันไป
-            seat.Parent:PivotTo(seat.Parent:GetPivot() * CFrame.new(0, 0, -boostPower * math.abs(seat.Throttle)))
+        -- ตรวจสอบว่ากำลังกดปุ่มอะไรอยู่
+        if UIS:IsKeyDown(Enum.KeyCode.W) then
+            -- กด W: ส่งแรงไปข้างหน้า (LookVector)
+            seat.Velocity = seat.Velocity + (seat.CFrame.LookVector * boostSpeed)
+            
+        elseif UIS:IsKeyDown(Enum.KeyCode.S) then
+            -- กด S: ส่งแรงไปข้างหลัง (-LookVector)
+            seat.Velocity = seat.Velocity - (seat.CFrame.LookVector * boostSpeed)
+        end
+        
+        -- แถม: ระบบเบรก (กด Space เพื่อหยุดแรงเฉื่อย)
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+            seat.Velocity = seat.Velocity * 0.9 -- ค่อยๆ ลดความเร็วลงจนหยุด
         end
     end
 end)
 
--- วิธีปิดสคริปต์: connection:Disconnect()
+print("✅ REMOTE HUB: Vehicle Boost (W/S) Active")
