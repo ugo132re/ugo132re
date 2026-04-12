@@ -1,21 +1,24 @@
--- [[ REMOTE HUB: Vehicle Speed Boost ]] --
-local speedMultiplier = 2 -- อยากให้เร็วขึ้นกี่เท่าปรับตรงนี้
+-- [[ REMOTE HUB: Vehicle Speed Boost (On-Press Only) ]] --
 
-local function boostVehicle()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        local seat = char.Humanoid.SeatPart
-        if seat and seat:IsA("VehicleSeat") then
-            -- เพิ่มความเร็วโดยการคูณค่าใน MaxSpeed และ Torque (ถ้าแก้ได้จากภายนอก)
-            seat.MaxSpeed = 500 -- ลองบังคับเปลี่ยนค่าโดยตรง
-            
-            -- หรือใช้การเร่งความเร็วผ่าน Velocity
-            if seat.Velocity.Magnitude > 0 then
-                seat.Velocity = seat.Velocity + (seat.CFrame.LookVector * speedMultiplier)
-            end
+local boostPower = 1.5 -- ปรับความแรงได้ตามชอบ
+local RunService = game:GetService("RunService")
+local LocalPlayer = game.Players.LocalPlayer
+
+local connection
+connection = RunService.Stepped:Connect(function()
+    local char = LocalPlayer.Character
+    local humanoid = char and char:FindFirstChild("Humanoid")
+    
+    if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+        local seat = humanoid.SeatPart
+        
+        -- เช็คว่ามีการกดปุ่มเดินหน้า (W) หรือถอยหลัง (S)
+        -- Throttle > 0 คือเดินหน้า, < 0 คือถอยหลัง
+        if seat.Throttle ~= 0 then
+            -- เพิ่มความเร็วตามทิศทางที่รถหันไป
+            seat.Parent:PivotTo(seat.Parent:GetPivot() * CFrame.new(0, 0, -boostPower * math.abs(seat.Throttle)))
         end
     end
-end
+end)
 
--- รันวนลูปเพื่อให้ทำงานตลอดเวลาที่ขับ
-game:GetService("RunService").Heartbeat:Connect(boostVehicle)
+-- วิธีปิดสคริปต์: connection:Disconnect()
