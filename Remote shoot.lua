@@ -1,10 +1,10 @@
--- [[ REMOTE HUB: MURDER MYSTERY ELITE (FULL CHAMS + SILENT AIM V2) ]] --
+-- [[ REMOTE HUB: MURDER MYSTERY ELITE (FULL FIX EDITION) ]] --
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "REMOTE HUB | MM2 SPECIAL",
-   LoadingTitle = "Initializing Remote Hub...",
+   Name = "REMOTE HUB | MM2 ULTIMATE",
+   LoadingTitle = "Fixing Systems...",
    LoadingSubtitle = "by UGO132RE",
    ConfigurationSaving = { Enabled = false }
 })
@@ -17,7 +17,7 @@ local Settings = {
     TargetPart = "UpperTorso"
 }
 
--- [[ FOV VISUAL ]] --
+-- [[ FOV CIRCLE ]] --
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 1
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
@@ -26,6 +26,7 @@ FOVCircle.Filled = false
 
 -- [[ FUNCTIONS ]] --
 local function getRole(player)
+    if not player then return "Innocent", Color3.fromRGB(0, 255, 0) end
     if player.Backpack:FindFirstChild("Knife") or (player.Character and player.Character:FindFirstChild("Knife")) then
         return "Murderer", Color3.fromRGB(255, 0, 0)
     elseif player.Backpack:FindFirstChild("Gun") or (player.Character and player.Character:FindFirstChild("Gun")) then
@@ -34,99 +35,62 @@ local function getRole(player)
     return "Innocent", Color3.fromRGB(0, 255, 0)
 end
 
-local function getMurderer()
-    for _, v in pairs(game.Players:GetPlayers()) do
-        local role = getRole(v)
-        if role == "Murderer" then return v end
-    end
-    return nil
-end
-
-local function isInsideFOV(pos)
-    local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
-    if onScreen then
-        local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-        local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-        return dist <= Settings.FOV
-    end
-    return false
-end
-
--- [[ CHAMS SYSTEM (HIGHLIGHT) ]] --
-local function applyChams(player)
-    local function addHighlight(character)
-        if player == game.Players.LocalPlayer then return end
-        if character:FindFirstChild("RemoteHubHighlight") then character.RemoteHubHighlight:Destroy() end
-        
-        local highlight = Instance.new("Highlight")
-        highlight.Name = "RemoteHubHighlight"
-        highlight.Parent = character
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0
-    end
-    if player.Character then addHighlight(player.Character) end
-    player.CharacterAdded:Connect(addHighlight)
-end
-
-for _, p in pairs(game.Players:GetPlayers()) do applyChams(p) end
-game.Players.PlayerAdded:Connect(applyChams)
-
-game:GetService("RunService").Heartbeat:Connect(function()
+-- [[ ESP FIXED SYSTEM ]] --
+local function updateESP()
     for _, p in pairs(game.Players:GetPlayers()) do
-        if p.Character and p.Character:FindFirstChild("RemoteHubHighlight") then
+        if p ~= game.Players.LocalPlayer and p.Character then
             local roleName, roleColor = getRole(p)
-            local highlight = p.Character.RemoteHubHighlight
-            highlight.Enabled = Settings.ESP
-            highlight.FillColor = roleColor
+            local char = p.Character
+            
+            -- สร้างหรือหา Highlight
+            local highlight = char:FindFirstChild("REMOTE_ESP")
+            if Settings.ESP then
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "REMOTE_ESP"
+                    highlight.Parent = char
+                end
+                highlight.FillColor = roleColor
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.FillTransparency = 0.5
+                highlight.Enabled = true
+            else
+                if highlight then highlight.Enabled = false end
+            end
         end
     end
-end)
+end
 
--- [[ UI TABS ]] --
-local MainTab = Window:CreateTab("Main Settings", 4483362458)
-
-MainTab:CreateToggle({
-   Name = "Enable Player Chams",
-   CurrentValue = true,
-   Callback = function(v) Settings.ESP = v end,
-})
-
-MainTab:CreateToggle({
-   Name = "Silent Aim (Lock Murderer)",
-   CurrentValue = true,
-   Callback = function(v) Settings.SilentAim = v end,
-})
-
-MainTab:CreateSlider({
-   Name = "FOV Size",
-   Range = {50, 600},
-   Increment = 10,
-   CurrentValue = 150,
-   Callback = function(v) Settings.FOV = v end,
-})
-
--- [[ THE CORE: REMOTE HOOK V2 ]] --
-local mt = getrawmetatable(game)
-local oldNamecall = mt.__namecall
-setreadonly(mt, false)
-
-mt.__namecall = newcclosure(function(self, ...)
+-- [[ SILENT AIM FIXED (HOOKMETAMETHOD) ]] --
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    -- เช็คทั้งชื่อ 'Shoot' และ 'Action' เพื่อความครอบคลุม
-    if Settings.SilentAim and (self.Name == "Shoot" or self.Name == "Action") and method == "FireServer" then
-        local murderer = getMurderer()
-        
-        if murderer and murderer.Character and murderer.Character:FindFirstChild(Settings.TargetPart) then
-            local targetPos = murderer.Character[Settings.TargetPart].Position
-            
-            if isInsideFOV(targetPos) then
-                -- แก้ไขแค่จุดปลายทาง (Argument ตัวที่ 2) แต่คงจุดกำเนิดเดิมไว้
-                if args[2] and typeof(args[2]) == "CFrame" then
-                    args[2] = murderer.Character[Settings.TargetPart].CFrame
+    -- ตรวจสอบชื่อ Remote 'Shoot' หรือ 'Action' ตามที่นายเคยส่งมา
+    if (self.Name == "Shoot" or self.Name == "Action") and method == "FireServer" and Settings.SilentAim then
+        local target = nil
+        local shortestDist = Settings.FOV
+
+        -- หาฆาตกรที่อยู่ใน FOV
+        for _, p in pairs(game.Players:GetPlayers()) do
+            local role = getRole(p)
+            if role == "Murderer" and p.Character and p.Character:FindFirstChild(Settings.TargetPart) then
+                local pos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(p.Character[Settings.TargetPart].Position)
+                local mouse = game:GetService("UserInputService"):GetMouseLocation()
+                local dist = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude
+                
+                if onScreen and dist < shortestDist then
+                    target = p.Character[Settings.TargetPart]
+                    shortestDist = dist
                 end
-                -- ส่งค่าที่แก้ไขแล้วกลับไป
+            end
+        end
+
+        -- ถ้าเจอฆาตกร ให้แก้แค่พิกัดเป้าหมาย (Args ตัวที่ 2)
+        if target then
+            if args[2] and typeof(args[2]) == "CFrame" then
+                args[2] = target.CFrame
                 return oldNamecall(self, unpack(args))
             end
         end
@@ -135,13 +99,35 @@ mt.__namecall = newcclosure(function(self, ...)
     return oldNamecall(self, ...)
 end)
 
-setreadonly(mt, true)
+-- [[ UI TABS ]] --
+local MainTab = Window:CreateTab("Main", 4483362458)
 
--- FOV Circle Loop
+MainTab:CreateToggle({
+   Name = "Enable Player ESP (Chams)",
+   CurrentValue = true,
+   Callback = function(v) Settings.ESP = v end,
+})
+
+MainTab:CreateToggle({
+   Name = "Silent Aim (Target Murderer)",
+   CurrentValue = true,
+   Callback = function(v) Settings.SilentAim = v end,
+})
+
+MainTab:CreateSlider({
+   Name = "FOV Radius",
+   Range = {50, 500},
+   Increment = 10,
+   CurrentValue = 150,
+   Callback = function(v) Settings.FOV = v end,
+})
+
+-- [[ LOOPS ]] --
 game:GetService("RunService").RenderStepped:Connect(function()
+    updateESP()
     FOVCircle.Radius = Settings.FOV
     FOVCircle.Position = game:GetService("UserInputService"):GetMouseLocation()
     FOVCircle.Visible = Settings.SilentAim
 end)
 
-Rayfield:Notify({Title = "REMOTE HUB", Content = "Script Fully Loaded!", Duration = 3})
+Rayfield:Notify({Title = "REMOTE HUB LOADED", Content = "Systems Stabilized!", Duration = 5})
