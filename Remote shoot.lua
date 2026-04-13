@@ -4,8 +4,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "REMOTE HUB | MM2 ULTIMATE",
-   LoadingTitle = "Fixing Systems...",
-   LoadingSubtitle = "by UGO132RE",
+   LoadingTitle = "Systems Stabilizing...",
+   LoadingSubtitle = "by REMOTE HUB TEAM",
    ConfigurationSaving = { Enabled = false }
 })
 
@@ -23,10 +23,11 @@ FOVCircle.Thickness = 1
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Transparency = 0.7
 FOVCircle.Filled = false
+FOVCircle.Visible = false
 
 -- [[ FUNCTIONS ]] --
 local function getRole(player)
-    if not player then return "Innocent", Color3.fromRGB(0, 255, 0) end
+    if not player or not player:FindFirstChild("Backpack") then return "Innocent", Color3.fromRGB(0, 255, 0) end
     if player.Backpack:FindFirstChild("Knife") or (player.Character and player.Character:FindFirstChild("Knife")) then
         return "Murderer", Color3.fromRGB(255, 0, 0)
     elseif player.Backpack:FindFirstChild("Gun") or (player.Character and player.Character:FindFirstChild("Gun")) then
@@ -35,63 +36,69 @@ local function getRole(player)
     return "Innocent", Color3.fromRGB(0, 255, 0)
 end
 
--- [[ ESP FIXED SYSTEM ]] --
-local function updateESP()
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= game.Players.LocalPlayer and p.Character then
-            local roleName, roleColor = getRole(p)
-            local char = p.Character
-            
-            -- สร้างหรือหา Highlight
-            local highlight = char:FindFirstChild("REMOTE_ESP")
-            if Settings.ESP then
-                if not highlight then
-                    highlight = Instance.new("Highlight")
-                    highlight.Name = "REMOTE_ESP"
-                    highlight.Parent = char
-                end
-                highlight.FillColor = roleColor
-                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                highlight.FillTransparency = 0.5
-                highlight.Enabled = true
-            else
-                if highlight then highlight.Enabled = false end
-            end
+-- [[ ESP SYSTEM (OPTIMIZED) ]] --
+local function manageESP(char, player)
+    task.spawn(function()
+        local highlight = char:FindFirstChild("REMOTE_HIGHLIGHT") or Instance.new("Highlight")
+        highlight.Name = "REMOTE_HIGHLIGHT"
+        highlight.Parent = char
+        highlight.Adornee = char
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.FillTransparency = 0.5
+        
+        while char and char.Parent and Settings.ESP do
+            local _, roleColor = getRole(player)
+            highlight.FillColor = roleColor
+            highlight.Enabled = true
+            task.wait(1) -- อัปเดตสีทุก 1 วินาทีเพื่อลดภาระเครื่อง
         end
-    end
+        if highlight then highlight.Enabled = false end
+    end)
 end
 
--- [[ SILENT AIM FIXED (HOOKMETAMETHOD) ]] --
+-- Monitor Players
+for _, p in pairs(game.Players:GetPlayers()) do
+    if p ~= game.Players.LocalPlayer and p.Character then manageESP(p.Character, p) end
+    p.CharacterAdded:Connect(function(c) manageESP(c, p) end)
+end
+game.Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function(c) manageESP(c, p) end)
+end)
+
+-- [[ SILENT AIM (RE-ENGINEERED) ]] --
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    -- ตรวจสอบชื่อ Remote 'Shoot' หรือ 'Action' ตามที่นายเคยส่งมา
-    if (self.Name == "Shoot" or self.Name == "Action") and method == "FireServer" and Settings.SilentAim then
-        local target = nil
-        local shortestDist = Settings.FOV
+    -- ค้นหาชื่อ Remote ที่มีคำว่า Shoot หรือ Action (ยืดหยุ่นกว่าเดิม)
+    if method == "FireServer" and (string.find(self.Name, "Shoot") or string.find(self.Name, "Action")) then
+        if Settings.SilentAim then
+            local targetPart = nil
+            local shortestDist = Settings.FOV
+            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
 
-        -- หาฆาตกรที่อยู่ใน FOV
-        for _, p in pairs(game.Players:GetPlayers()) do
-            local role = getRole(p)
-            if role == "Murderer" and p.Character and p.Character:FindFirstChild(Settings.TargetPart) then
-                local pos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(p.Character[Settings.TargetPart].Position)
-                local mouse = game:GetService("UserInputService"):GetMouseLocation()
-                local dist = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude
-                
-                if onScreen and dist < shortestDist then
-                    target = p.Character[Settings.TargetPart]
-                    shortestDist = dist
+            for _, p in pairs(game.Players:GetPlayers()) do
+                local role = getRole(p)
+                if role == "Murderer" and p.Character and p.Character:FindFirstChild(Settings.TargetPart) then
+                    local pos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(p.Character[Settings.TargetPart].Position)
+                    if onScreen then
+                        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                        if dist < shortestDist then
+                            targetPart = p.Character[Settings.TargetPart]
+                            shortestDist = dist
+                        end
+                    end
                 end
             end
-        end
 
-        -- ถ้าเจอฆาตกร ให้แก้แค่พิกัดเป้าหมาย (Args ตัวที่ 2)
-        if target then
-            if args[2] and typeof(args[2]) == "CFrame" then
-                args[2] = target.CFrame
-                return oldNamecall(self, unpack(args))
+            -- ถ้าพบเป้าหมาย ให้แทนที่ค่าตำแหน่งปลายทาง
+            if targetPart then
+                -- แก้ไข args[2] โดยไม่สนใจประเภทข้อมูลเดิม (เผื่อเกมส่งเป็น Vector3 หรือ CFrame)
+                if args[2] then
+                    args[2] = targetPart.CFrame
+                    return oldNamecall(self, unpack(args))
+                end
             end
         end
     end
@@ -100,34 +107,37 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 -- [[ UI TABS ]] --
-local MainTab = Window:CreateTab("Main", 4483362458)
+local MainTab = Window:CreateTab("Main Settings", 4483362458)
 
 MainTab:CreateToggle({
-   Name = "Enable Player ESP (Chams)",
+   Name = "Enable Player Chams (ESP)",
    CurrentValue = true,
    Callback = function(v) Settings.ESP = v end,
 })
 
 MainTab:CreateToggle({
-   Name = "Silent Aim (Target Murderer)",
+   Name = "Murderer Silent Aim",
    CurrentValue = true,
    Callback = function(v) Settings.SilentAim = v end,
 })
 
 MainTab:CreateSlider({
    Name = "FOV Radius",
-   Range = {50, 500},
+   Range = {50, 800},
    Increment = 10,
    CurrentValue = 150,
    Callback = function(v) Settings.FOV = v end,
 })
 
--- [[ LOOPS ]] --
+-- [[ LOOP UPDATES ]] --
 game:GetService("RunService").RenderStepped:Connect(function()
-    updateESP()
-    FOVCircle.Radius = Settings.FOV
-    FOVCircle.Position = game:GetService("UserInputService"):GetMouseLocation()
-    FOVCircle.Visible = Settings.SilentAim
+    if Settings.SilentAim then
+        FOVCircle.Radius = Settings.FOV
+        FOVCircle.Position = game:GetService("UserInputService"):GetMouseLocation()
+        FOVCircle.Visible = true
+    else
+        FOVCircle.Visible = false
+    end
 end)
 
-Rayfield:Notify({Title = "REMOTE HUB LOADED", Content = "Systems Stabilized!", Duration = 5})
+Rayfield:Notify({Title = "REMOTE HUB", Content = "Script Ready to Use", Duration = 5})
