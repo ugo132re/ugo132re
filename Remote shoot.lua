@@ -1,85 +1,107 @@
--- [[ REMOTE HUB: Murder Mystery Elite Edition ]] --
+-- [[ REMOTE HUB: MURDER MYSTERY ELITE (FULL ESP + SILENT AIM) ]] --
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "REMOTE HUB | V.Special",
-   LoadingTitle = "Initializing Remote System...",
+   Name = "REMOTE HUB | MM2 SPECIAL",
+   LoadingTitle = "Loading Remote Systems...",
    LoadingSubtitle = "by UGO132RE",
    ConfigurationSaving = { Enabled = false }
 })
 
--- [[ VARIABLES ]] --
-local fovRadius = 150
-local fovEnabled = true
-local silentAimEnabled = true
-local targetPart = "UpperTorso" -- ยิงไปที่ตัวตามที่นายต้องการ
+-- [[ SETTINGS ]] --
+local Settings = {
+    SilentAim = true,
+    FOV = 150,
+    ESP = true,
+    TargetPart = "UpperTorso"
+}
 
--- FOV Circle Drawing
+-- [[ FOV VISUAL ]] --
 local FOVCircle = Drawing.new("Circle")
-FOVCircle.Thickness = 2
+FOVCircle.Thickness = 1
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+FOVCircle.Transparency = 0.7
 FOVCircle.Filled = false
-FOVCircle.Transparency = 0.5
 
 -- [[ FUNCTIONS ]] --
-local function getMurderer()
-    for _, v in pairs(game.Players:GetPlayers()) do
-        if v.Character and v.Character:FindFirstChild("Knife") or (v.Backpack:FindFirstChild("Knife")) then
-            return v
+local function getRole(player)
+    if player.Backpack:FindFirstChild("Knife") or (player.Character and player.Character:FindFirstChild("Knife")) then
+        return "Murderer", Color3.fromRGB(255, 0, 0)
+    elseif player.Backpack:FindFirstChild("Gun") or (player.Character and player.Character:FindFirstChild("Gun")) then
+        return "Sheriff", Color3.fromRGB(0, 0, 255)
+    end
+    return "Innocent", Color3.fromRGB(0, 255, 0)
+end
+
+-- [[ ESP SYSTEM ]] --
+local function createESP(player)
+    local box = Drawing.new("Square")
+    local text = Drawing.new("Text")
+    
+    local connection
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if Settings.ESP and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player ~= game.Players.LocalPlayer then
+            local roleName, roleColor = getRole(player)
+            local pos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+            
+            if onScreen then
+                -- Setup Box
+                box.Visible = true
+                box.Size = Vector2.new(2000 / pos.Z, 2500 / pos.Z)
+                box.Position = Vector2.new(pos.X - box.Size.X / 2, pos.Y - box.Size.Y / 2)
+                box.Color = roleColor
+                
+                -- Setup Text
+                text.Visible = true
+                text.Text = string.format("[%s] %s", roleName, player.Name)
+                text.Size = 16
+                text.Center = true
+                text.Outline = true
+                text.Color = roleColor
+                text.Position = Vector2.new(pos.X, pos.Y - (box.Size.Y / 2) - 20)
+            else
+                box.Visible = false
+                text.Visible = false
+            end
+        else
+            box.Visible = false
+            text.Visible = false
+            if not player.Parent then connection:Disconnect() box:Remove() text:Remove() end
         end
-    end
-    return nil
+    end)
 end
 
-local function isInsideFOV(pos)
-    local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(pos)
-    if onScreen then
-        local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-        local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-        return dist <= fovRadius
-    end
-    return false
-end
+-- Run ESP for all players
+for _, p in pairs(game.Players:GetPlayers()) do createESP(p) end
+game.Players.PlayerAdded:Connect(createESP)
 
--- [[ TABS ]] --
-local MainTab = Window:CreateTab("Main Hacks", 4483362458)
+-- [[ COMBAT TABS ]] --
+local MainTab = Window:CreateTab("Combat & ESP", 4483362458)
 
-MainTab:CreateSection("Role Revealer")
-
-MainTab:CreateButton({
-   Name = "Scan Roles (Show Who is Murderer)",
-   Callback = function()
-       for _, v in pairs(game.Players:GetPlayers()) do
-           local role = "Innocent"
-           if v.Backpack:FindFirstChild("Knife") or (v.Character and v.Character:FindFirstChild("Knife")) then
-               role = "MURDERER 🔪"
-           elseif v.Backpack:FindFirstChild("Gun") or (v.Character and v.Character:FindFirstChild("Gun")) then
-               role = "SHERIFF 🔫"
-           end
-           Rayfield:Notify({Title = v.Name, Content = "Role: " .. role, Duration = 5})
-       end
-   end,
+MainTab:CreateSection("ESP Settings")
+MainTab:CreateToggle({
+   Name = "Enable Player ESP",
+   CurrentValue = true,
+   Callback = function(v) Settings.ESP = v end,
 })
 
-MainTab:CreateSection("Combat (Silent Aim)")
-
+MainTab:CreateSection("Silent Aim")
 MainTab:CreateToggle({
-   Name = "Enable Silent Aim (Murderer Focus)",
+   Name = "Silent Aim (Target Murderer)",
    CurrentValue = true,
-   Callback = function(Value) silentAimEnabled = Value end,
+   Callback = function(v) Settings.SilentAim = v end,
 })
 
 MainTab:CreateSlider({
-   Name = "FOV Radius",
-   Range = {50, 800},
+   Name = "FOV Size",
+   Range = {50, 500},
    Increment = 10,
-   Suffix = "px",
    CurrentValue = 150,
-   Callback = function(Value) fovRadius = Value end,
+   Callback = function(v) Settings.FOV = v end,
 })
 
--- [[ REMOTE HOOKING (THE CORE) ]] --
+-- [[ THE FIX: REMOTE HOOKING ]] --
 local mt = getrawmetatable(game)
 local oldNamecall = mt.__namecall
 setreadonly(mt, false)
@@ -88,27 +110,43 @@ mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    if silentAimEnabled and self.Name == "Shoot" and method == "FireServer" then
-        local murderer = getMurderer()
-        if murderer and murderer.Character and murderer.Character:FindFirstChild(targetPart) then
-            local targetPos = murderer.Character[targetPart].Position
-            if isInsideFOV(targetPos) then
-                -- แก้ไข args ตัวที่ 2 (จุดกระทบ) ให้พุ่งไปที่ฆาตกรทันที
-                args[2] = murderer.Character[targetPart].CFrame
-                return oldNamecall(self, table.unpack(args))
+    if Settings.SilentAim and self.Name == "Shoot" and method == "FireServer" then
+        -- หาฆาตกร
+        local targetPlayer = nil
+        for _, p in pairs(game.Players:GetPlayers()) do
+            local role = getRole(p)
+            if role == "Murderer" and p.Character and p.Character:FindFirstChild(Settings.TargetPart) then
+                local screenPos, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(p.Character[Settings.TargetPart].Position)
+                local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                
+                if onScreen and dist <= Settings.FOV then
+                    targetPlayer = p
+                    break
+                end
             end
         end
+
+        -- ถ้าเจอฆาตกรใน FOV ให้เปลี่ยนพิกัดยิง
+        if targetPlayer then
+            local newArgs = {
+                game.Players.LocalPlayer.Character.Head.CFrame, -- จุดเริ่ม
+                targetPlayer.Character[Settings.TargetPart].CFrame -- จุดจบที่ตัวฆาตกร
+            }
+            return oldNamecall(self, unpack(newArgs))
+        end
     end
+
     return oldNamecall(self, ...)
 end)
 
 setreadonly(mt, true)
 
--- FOV Circle Loop
+-- FOV Update Loop
 game:GetService("RunService").RenderStepped:Connect(function()
-    FOVCircle.Radius = fovRadius
-    FOVCircle.Visible = fovEnabled
+    FOVCircle.Radius = Settings.FOV
     FOVCircle.Position = game:GetService("UserInputService"):GetMouseLocation()
+    FOVCircle.Visible = Settings.SilentAim
 end)
 
-Rayfield:Notify({Title = "REMOTE HUB Loaded", Content = "Ready for Hunting!", Duration = 5})
+Rayfield:Notify({Title = "REMOTE HUB", Content = "ESP & Silent Aim Ready!", Duration = 3})
