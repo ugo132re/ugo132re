@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Dola Hub | MM2 Edition",
+   Name = "REMOTE Hub | MM2 ",
    LoadingTitle = "Initializing Systems...",
-   LoadingSubtitle = "by Dola",
+   LoadingSubtitle = "by REMOTE HuUB",
    ConfigurationSaving = { Enabled = false }
 })
 
